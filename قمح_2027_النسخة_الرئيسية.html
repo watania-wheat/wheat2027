@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="htmlRoot">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wheat 2027 Tracking | متابعة قمح 2027</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#F5F7F6;color:#1a2e2a;line-height:1.5;padding:14px}
+body[dir="rtl"]{direction:rtl}
+body[dir="ltr"]{direction:ltr}
+.header{background:linear-gradient(135deg,#1B4332 0%,#2D6A4F 100%);color:white;padding:16px 22px;border-radius:12px;margin-bottom:14px;box-shadow:0 4px 12px rgba(27,67,50,0.15);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.header h1{font-size:1.35rem;margin-bottom:2px}
+.header .subtitle{opacity:0.9;font-size:0.82rem}
+.header-actions{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.btn{padding:7px 13px;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-size:0.78rem;font-weight:600;background:rgba(255,255,255,0.15);color:white;transition:all 0.2s}
+.btn:hover{background:rgba(255,255,255,0.28)}
+.btn-primary{background:#40916C}
+.btn-primary:hover{background:#52B788}
+.btn-danger{background:rgba(192,57,43,0.9)}
+.btn-info{background:#2874A6}
+.lang-toggle{background:white;color:#1B4332;padding:5px 10px;border-radius:20px;font-weight:700;cursor:pointer;font-size:0.75rem;border:none;font-family:inherit}
+.mode-badge{background:#D4A017;color:white;padding:4px 12px;border-radius:16px;font-size:0.72rem;font-weight:700}
+.mode-badge.engineer{background:#2874A6}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;margin-bottom:12px}
+.kpi{background:white;padding:11px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05);border-top:4px solid #2D6A4F;text-align:center}
+.kpi.done{border-top-color:#27AE60;background:linear-gradient(to bottom,#F5FDF8,white)}
+.kpi.progress{border-top-color:#D4A017;background:linear-gradient(to bottom,#FFFEF5,white)}
+.kpi.pending{border-top-color:#C0392B;background:linear-gradient(to bottom,#FFF5F5,white)}
+.kpi.planted{border-top-color:#2874A6;background:linear-gradient(to bottom,#F0F8FF,white)}
+.kpi .value{font-size:1.65rem;font-weight:700;color:#1B4332}
+.kpi .label{font-size:0.7rem;color:#666;margin-top:2px}
+
+.tabs{display:flex;gap:4px;background:#E8EDE9;padding:4px;border-radius:10px;margin-bottom:12px;flex-wrap:wrap}
+.tab{padding:9px 16px;cursor:pointer;border-radius:8px;font-weight:500;color:#555;transition:all 0.2s;user-select:none;font-size:0.85rem}
+.tab:hover{background:rgba(255,255,255,0.5)}
+.tab.active{background:white;color:#1B4332;box-shadow:0 2px 6px rgba(0,0,0,0.08);font-weight:700}
+.panel{display:none}
+.panel.active{display:block}
+
+.filters{background:white;padding:11px;border-radius:10px;margin-bottom:12px;display:flex;gap:9px;flex-wrap:wrap;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.filter-group{display:flex;align-items:center;gap:5px}
+.filter-group label{font-size:0.8rem;font-weight:600;color:#555}
+.filter-group select,.filter-group input{padding:6px 9px;border:1px solid #CED4DA;border-radius:6px;font-family:inherit;font-size:0.82rem;background:white}
+body[dir="rtl"] .result-count{margin-right:auto}
+body[dir="ltr"] .result-count{margin-left:auto}
+.result-count{background:#1B4332;color:white;padding:5px 12px;border-radius:20px;font-size:0.78rem;font-weight:600}
+
+.table-wrapper{background:white;border-radius:10px;overflow:auto;max-height:72vh;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+table{width:100%;border-collapse:collapse;font-size:0.8rem}
+thead{position:sticky;top:0;z-index:10;background:#1B4332}
+th{color:white;padding:9px 5px;text-align:center;font-weight:600;font-size:0.74rem;border-bottom:2px solid #0d2b22;white-space:nowrap}
+td{padding:8px 5px;text-align:center;border-bottom:1px solid #E8EDE9;vertical-align:middle}
+tr{cursor:pointer;transition:background 0.1s}
+tr:hover td{background:#F8FAF9 !important}
+.phase-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:0.7rem;font-weight:600;color:white}
+.phase-badge.Ph1{background:#1B4332}.phase-badge.Ph2{background:#14213D}.phase-badge.Ph3{background:#6B2737}
+.pivot-name{font-weight:700;color:#1B4332;font-size:0.92rem}
+.risk-tag{display:inline-block;padding:2px 6px;border-radius:10px;font-size:0.65rem;font-weight:700}
+.risk-tag.critical{background:#FFD5D5;color:#C0392B}.risk-tag.high{background:#FDEBD0;color:#E67E22}
+.risk-tag.medium{background:#FFF3CD;color:#D4A017}.risk-tag.low{background:#D8F3DC;color:#27AE60}
+
+.progress-bar{width:100%;height:10px;background:#E8EDE9;border-radius:5px;overflow:hidden}
+.progress-bar .fill{height:100%;background:linear-gradient(to left,#27AE60,#2D6A4F)}
+body[dir="ltr"] .progress-bar .fill{background:linear-gradient(to right,#27AE60,#2D6A4F)}
+.progress-bar.low .fill{background:linear-gradient(to left,#D4A017,#E67E22)}
+
+.status-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-start:4px}
+.status-dot.not-started{background:#CED4DA}.status-dot.prep{background:#D4A017}
+.status-dot.planted{background:#27AE60}.status-dot.harvested{background:#2874A6}
+
+.engineer-tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:0.68rem;font-weight:600;color:white;background:#555}
+.engineer-tag.mahmud{background:#2D6A4F}
+.engineer-tag.shaban{background:#D4A017}
+.engineer-tag.osama{background:#2874A6}
+.engineer-tag.wael{background:#6B2737}
+.engineer-tag.arahman{background:#C0392B}
+.engineer-tag.unassigned{background:#999}
+
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.65);z-index:1000;justify-content:center;align-items:flex-start;padding:14px;overflow-y:auto}
+.modal-overlay.active{display:flex}
+.modal{background:white;border-radius:12px;max-width:1100px;width:100%;max-height:95vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.3)}
+.modal-header{background:linear-gradient(135deg,#1B4332 0%,#2D6A4F 100%);color:white;padding:14px 22px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5}
+.modal-header h2{font-size:1.15rem}
+.modal-header .close{background:rgba(255,255,255,0.2);border:none;color:white;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem}
+.modal-body{padding:18px 22px}
+
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:9px;margin-bottom:14px;background:#F0F3F2;padding:12px;border-radius:10px}
+.info-item{font-size:0.84rem}
+.info-item .ilabel{color:#666;font-size:0.7rem;margin-bottom:2px}
+.info-item .ival{color:#1B4332;font-weight:700}
+
+.planting-date-box{background:linear-gradient(135deg,#E8F5EE 0%,#D8F3DC 100%);border:2px solid #27AE60;padding:14px;border-radius:10px;margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.planting-date-box label{font-weight:700;color:#1B4332}
+.planting-date-box input{padding:9px 12px;border:1px solid #27AE60;border-radius:8px;font-family:inherit;font-size:0.92rem;font-weight:600;background:white}
+.planting-date-box button{background:#27AE60;color:white;border:none;padding:9px 18px;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:700}
+
+.section-title{font-size:0.98rem;font-weight:700;color:#1B4332;margin:16px 0 9px;padding-bottom:5px;border-bottom:2px solid #2D6A4F;display:flex;justify-content:space-between;align-items:center}
+.ops-table{width:100%;border-collapse:collapse;font-size:0.82rem}
+.ops-table th{background:#40916C;color:white;padding:7px 5px;text-align:center;font-size:0.72rem;font-weight:600}
+.ops-table td{padding:7px 5px;text-align:center;border-bottom:1px solid #E8EDE9;vertical-align:middle}
+.ops-table tr.done td{background:#F5FDF8}
+.ops-table tr.overdue td{background:#FFF5F5}
+.ops-table td.text{text-align:start;font-size:0.82rem}
+.ops-table input[type="date"]{padding:4px 7px;border:1px solid #CED4DA;border-radius:5px;font-family:inherit;font-size:0.78rem;background:white}
+.op-type{display:inline-block;padding:2px 7px;border-radius:10px;font-size:0.65rem;font-weight:700}
+.op-type.prep{background:#FFF3CD;color:#856404}
+.op-type.fert{background:#D6E4FF;color:#14213D}
+.op-type.pesticide{background:#FFE5EC;color:#C0392B}
+.op-type.irrigation{background:#D8F3DC;color:#1B4332}
+.op-type.planting{background:#27AE60;color:white}
+.op-type.harvest{background:#2874A6;color:white}
+.op-type.stage{background:#F0F3F2;color:#555}
+.op-status-btn{padding:3px 9px;border:none;border-radius:14px;cursor:pointer;font-size:0.7rem;font-weight:700;font-family:inherit;background:#CED4DA;color:#555}
+.op-status-btn.done{background:#27AE60;color:white}
+
+.add-note{display:grid;grid-template-columns:1fr auto;gap:7px;margin-bottom:10px}
+.add-note textarea{width:100%;padding:7px 11px;border:1px solid #CED4DA;border-radius:7px;font-family:inherit;font-size:0.86rem;resize:vertical;min-height:55px}
+.add-note button{background:#2D6A4F;color:white;border:none;padding:7px 16px;border-radius:7px;cursor:pointer;font-weight:700;align-self:end;font-family:inherit;font-size:0.86rem}
+.file-upload-row{display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap}
+.file-label{background:#40916C;color:white;padding:7px 14px;border-radius:7px;cursor:pointer;font-weight:700;font-size:0.83rem}
+.file-label input{display:none}
+.notes-list{display:grid;gap:7px}
+.note-item{background:#F8FAF9;padding:9px 13px;border-radius:7px;border-right:4px solid #2D6A4F;position:relative;font-size:0.84rem}
+body[dir="ltr"] .note-item{border-right:none;border-left:4px solid #2D6A4F}
+.note-item.from-engineer{border-right-color:#2874A6;background:#F0F8FF}
+body[dir="ltr"] .note-item.from-engineer{border-left-color:#2874A6}
+.note-item .date{font-size:0.68rem;color:#777;margin-bottom:3px}
+.note-item .del{position:absolute;top:5px;background:none;border:none;color:#C0392B;cursor:pointer;font-size:0.95rem;opacity:0.5}
+body[dir="rtl"] .note-item .del{left:7px}
+body[dir="ltr"] .note-item .del{right:7px}
+.note-item .del:hover{opacity:1}
+.engineer-note-tag{display:inline-block;background:#2874A6;color:white;padding:1px 6px;border-radius:10px;font-size:0.62rem;margin-inline-start:6px}
+.wa-section{background:#F0F8E8;border:2px solid #25D366;padding:14px;border-radius:10px;margin:12px 0}
+.wa-section h4{color:#128C7E;font-size:1rem;margin-bottom:8px}
+.wa-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.wa-filter-btn{padding:4px 10px;border:1px solid #CED4DA;border-radius:14px;background:white;cursor:pointer;font-size:0.72rem;font-family:inherit;font-weight:600;color:#555}
+.wa-filter-btn.active{background:#128C7E;color:white;border-color:#128C7E}
+.wa-msg{background:white;padding:8px 12px;border-radius:7px;margin-bottom:6px;border-right:3px solid #25D366;font-size:0.82rem}
+body[dir="ltr"] .wa-msg{border-right:none;border-left:3px solid #25D366}
+.wa-msg.fault{border-right-color:#C0392B}
+body[dir="ltr"] .wa-msg.fault{border-left-color:#C0392B}
+.wa-msg.stop{border-right-color:#E67E22}
+body[dir="ltr"] .wa-msg.stop{border-left-color:#E67E22}
+.wa-msg.water{border-right-color:#2874A6}
+body[dir="ltr"] .wa-msg.water{border-left-color:#2874A6}
+.wa-msg.fert{border-right-color:#D4A017}
+body[dir="ltr"] .wa-msg.fert{border-left-color:#D4A017}
+.wa-msg .wa-meta{font-size:0.68rem;color:#777;margin-bottom:3px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.wa-msg .wa-sender{font-weight:700;color:#128C7E}
+.wa-msg .wa-text{color:#333;white-space:pre-wrap;line-height:1.4}
+.wa-tag{display:inline-block;padding:1px 7px;border-radius:10px;font-size:0.62rem;font-weight:700}
+.wa-tag.fault{background:#FFD5D5;color:#C0392B}
+.wa-tag.stop{background:#FDEBD0;color:#E67E22}
+.wa-tag.water{background:#D6E4FF;color:#2874A6}
+.wa-tag.fert{background:#FFF3CD;color:#856404}
+.wa-tag.general{background:#F0F3F2;color:#555}
+.wa-empty{text-align:center;padding:12px;color:#999;font-style:italic;font-size:0.85rem}
+.wa-progress{background:white;padding:16px;border-radius:10px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.05);display:none}
+.wa-progress.active{display:block}
+.wa-progress .bar{height:8px;background:#E8EDE9;border-radius:4px;overflow:hidden;margin-top:8px}
+.wa-progress .bar-fill{height:100%;background:#25D366;transition:width 0.3s}
+.wa-badge{background:#25D366;color:white;padding:2px 8px;border-radius:12px;font-size:0.68rem;font-weight:700}
+
+.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:7px}
+.media-item{position:relative;background:#F8FAF9;border-radius:7px;overflow:hidden;aspect-ratio:4/3}
+.media-item img,.media-item video{width:100%;height:100%;object-fit:cover;cursor:pointer;display:block}
+.media-item .mdel{position:absolute;top:3px;background:rgba(192,57,43,0.9);color:white;border:none;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:0.75rem}
+body[dir="rtl"] .media-item .mdel{left:3px}
+body[dir="ltr"] .media-item .mdel{right:3px}
+
+.warning-box{background:#FFF5F5;padding:11px 15px;border-radius:8px;border-right:4px solid #C0392B;margin-bottom:12px;font-size:0.86rem}
+body[dir="ltr"] .warning-box{border-right:none;border-left:4px solid #C0392B}
+
+.image-viewer{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:2000;justify-content:center;align-items:center;padding:18px}
+.image-viewer.active{display:flex}
+.image-viewer img,.image-viewer video{max-width:100%;max-height:95vh}
+.image-viewer .close{position:absolute;top:18px;background:white;border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.25rem}
+body[dir="rtl"] .image-viewer .close{left:18px}
+body[dir="ltr"] .image-viewer .close{right:18px}
+.empty-state{text-align:center;padding:18px;color:#999;font-style:italic}
+
+.engineer-panel{background:white;padding:16px;border-radius:10px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.engineer-card{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;align-items:center;padding:12px;border-radius:8px;background:#F8FAF9;margin-bottom:8px;border-right:4px solid #2D6A4F}
+body[dir="ltr"] .engineer-card{border-right:none;border-left:4px solid #2D6A4F}
+.engineer-card.mahmud{border-right-color:#2D6A4F}
+.engineer-card.shaban{border-right-color:#D4A017}
+.engineer-card.osama{border-right-color:#2874A6}
+.engineer-card.wael{border-right-color:#6B2737}
+.engineer-card.arahman{border-right-color:#C0392B}
+.engineer-card .ename{font-weight:700;color:#1B4332;font-size:0.95rem}
+.engineer-card .ezone{color:#666;font-size:0.75rem;margin-top:2px}
+.engineer-card .ecount{background:#1B4332;color:white;padding:4px 10px;border-radius:12px;font-size:0.75rem;font-weight:600}
+
+.merge-area{background:#FFF9E8;border:2px dashed #D4A017;padding:20px;border-radius:12px;text-align:center;margin-bottom:14px}
+.merge-area h3{color:#856404;margin-bottom:8px}
+.merge-area p{color:#666;font-size:0.85rem;margin-bottom:12px}
+.merge-area .drop-zone{background:white;border:2px dashed #CED4DA;padding:30px;border-radius:10px;cursor:pointer}
+.merge-area .drop-zone:hover{border-color:#2D6A4F;background:#F5FDF8}
+.merge-area input{display:none}
+
+.help-box{background:#F0F8FF;padding:12px 16px;border-radius:10px;border-right:4px solid #2874A6;margin-bottom:14px;font-size:0.86rem;color:#333}
+body[dir="ltr"] .help-box{border-right:none;border-left:4px solid #2874A6}
+.help-box strong{color:#2874A6}
+
+@media (max-width:768px){
+    body{padding:7px}
+    .header h1{font-size:0.95rem}
+    th,td{padding:5px 3px;font-size:0.68rem}
+    .modal-body{padding:12px}
+}
+</style>
+</head>
+<body dir="rtl" id="bodyRoot">
+
+<div class="header">
+    <div>
+        <h1 id="appTitle">🌾 نموذج متابعة قمح 2027 — النسخة الرئيسية</h1>
+        <div class="subtitle" id="appSubtitle">إدارة التوزيع على المهندسين + التحليل الكامل + جمع البيانات</div>
+    </div>
+    <div class="header-actions">
+        <span class="mode-badge" id="modeBadge">🏢 نسخة رئيسية</span>
+        <button class="lang-toggle" onclick="toggleLang()" id="langBtn">🌐 EN</button>
+        <button class="btn btn-primary" onclick="exportData()" data-ar="💾 نسخة احتياطية" data-en="💾 Backup">💾 نسخة احتياطية</button>
+        <label class="btn" style="cursor:pointer;" data-ar="📂 استيراد" data-en="📂 Import">
+            📂 استيراد
+            <input type="file" accept="application/json" onchange="importData(event)" style="display:none;">
+        </label>
+        <label class="btn" style="cursor:pointer;background:#25D366;" data-ar="📱 واتساب" data-en="📱 WhatsApp">
+            📱 واتساب
+            <input type="file" accept=".txt" multiple onchange="importWhatsApp(event)" style="display:none;">
+        </label>
+    </div>
+</div>
+
+<div class="wa-progress" id="waProgress">
+    <strong style="color:#128C7E;" data-ar="📱 جاري معالجة دردشة الواتساب..." data-en="📱 Processing WhatsApp chat...">📱 جاري معالجة دردشة الواتساب...</strong>
+    <div id="waProgressText" style="font-size:0.82rem;color:#666;margin-top:4px;"></div>
+    <div class="bar"><div class="bar-fill" id="waProgressBar" style="width:0%"></div></div>
+</div>
+<div class="kpi-grid" id="kpiGrid"></div>
+
+<div class="tabs">
+    <div class="tab active" onclick="switchTab(0)" data-ar="📊 جميع المحاور" data-en="📊 All Pivots">📊 جميع المحاور</div>
+    <div class="tab" onclick="switchTab(1)" data-ar="👥 توزيع المهندسين" data-en="👥 Engineers">👥 توزيع المهندسين</div>
+    <div class="tab" onclick="switchTab(2)" data-ar="📥 جمع البيانات" data-en="📥 Collect Data">📥 جمع البيانات</div>
+</div>
+
+<!-- Panel 0: All Pivots -->
+<div class="panel active" id="panel0">
+    <div class="filters">
+        <div class="filter-group"><label data-ar="المهندس:" data-en="Engineer:">المهندس:</label>
+            <select id="engineerFilter" onchange="renderTable()"><option value="">الكل</option></select>
+        </div>
+        <div class="filter-group"><label data-ar="الحالة:" data-en="Status:">الحالة:</label>
+            <select id="statusFilter" onchange="renderTable()">
+                <option value="" data-ar="الكل" data-en="All">الكل</option>
+                <option value="not-started" data-ar="⚪ لم يبدأ" data-en="⚪ Not started">⚪ لم يبدأ</option>
+                <option value="prep" data-ar="🟡 تجهيز" data-en="🟡 Prep">🟡 تجهيز</option>
+                <option value="planted" data-ar="🟢 مزروع" data-en="🟢 Planted">🟢 مزروع</option>
+            </select>
+        </div>
+        <div class="filter-group"><label data-ar="المرحلة:" data-en="Phase:">المرحلة:</label>
+            <select id="phaseFilter" onchange="renderTable()">
+                <option value="" data-ar="الكل" data-en="All">الكل</option>
+                <option value="Ph1">Ph1</option><option value="Ph2">Ph2</option><option value="Ph3">Ph3</option>
+            </select>
+        </div>
+        <div class="filter-group"><label>🔍:</label>
+            <input type="text" id="searchFilter" oninput="renderTable()" data-placeholder-ar="محور / بئر..." data-placeholder-en="Pivot / well..." placeholder="محور / بئر...">
+        </div>
+        <div class="result-count" id="resultCount"></div>
+    </div>
+    <div class="table-wrapper"><table>
+        <thead><tr>
+            <th>#</th><th data-ar="المرحلة" data-en="Phase">المرحلة</th>
+            <th data-ar="المحور" data-en="Pivot">المحور</th><th data-ar="البئر" data-en="Well">البئر</th>
+            <th data-ar="المساحة" data-en="Area">المساحة</th><th data-ar="المهندس" data-en="Engineer">المهندس</th>
+            <th data-ar="الخطر" data-en="Risk">الخطر</th>
+            <th data-ar="تاريخ الزراعة" data-en="Planting">تاريخ الزراعة</th>
+            <th data-ar="العمر" data-en="Age">العمر</th>
+            <th data-ar="الحالة" data-en="Status">الحالة</th>
+            <th data-ar="التقدم" data-en="Progress">التقدم</th>
+        </tr></thead>
+        <tbody id="tableBody"></tbody>
+    </table></div>
+</div>
+
+<!-- Panel 1: Engineer Distribution -->
+<div class="panel" id="panel1">
+    <div class="help-box">
+        <strong data-ar="💡 كيف يعمل التوزيع:" data-en="💡 How distribution works:">💡 كيف يعمل التوزيع:</strong>
+        <div style="margin-top:6px;" data-ar="لكل مهندس زراعة محاوره الخاصة. اضغط &quot;إنشاء ملف المهندس&quot; لتنزيل نسخة HTML مخصصة له فيها محاوره فقط. أرسلها عبر واتساب/إيميل. المهندس يعمل عليها (بدون إنترنت)، ويصدر JSON كل أسبوع. اذهب لتبويب &quot;جمع البيانات&quot; لدمج ملفاتهم." data-en="Each engineer has their own pivots. Click &quot;Generate Engineer File&quot; to download a tailored HTML with only their pivots. Send via WhatsApp/email. Engineer works offline, exports JSON weekly. Go to &quot;Collect Data&quot; to merge their files.">لكل مهندس زراعة محاوره الخاصة. اضغط "إنشاء ملف المهندس" لتنزيل نسخة HTML مخصصة له.</div>
+    </div>
+    <div class="engineer-panel" id="engineerPanel"></div>
+</div>
+
+<!-- Panel 2: Collect Data -->
+<div class="panel" id="panel2">
+    <div class="help-box">
+        <strong data-ar="📥 كيفية جمع البيانات:" data-en="📥 How to collect data:">📥 كيفية جمع البيانات:</strong>
+        <div style="margin-top:6px;" data-ar="استلم ملفات JSON من المهندسين، احفظها على جهازك، ثم اختر الكل مرة واحدة. سيدمج النظام البيانات تلقائياً مع ملاحظة بتاريخ الاستلام ومن أرسلها." data-en="Receive JSON files from engineers, save them on your device, then select all at once. The system auto-merges data with sender tag.">استلم ملفات JSON من المهندسين، احفظها، ثم اختر الكل مرة واحدة.</div>
+    </div>
+    <div class="merge-area">
+        <h3 data-ar="📥 اسحب ملفات المهندسين هنا" data-en="📥 Drop engineer files here">📥 اسحب ملفات المهندسين هنا</h3>
+        <p data-ar="أو اضغط لاختيار الملفات (JSON) — يمكنك اختيار عدة ملفات دفعة واحدة" data-en="Or click to select JSON files — multiple at once">أو اضغط لاختيار الملفات</p>
+        <label class="drop-zone" id="dropZone">
+            <input type="file" accept="application/json" multiple onchange="mergeEngineerFiles(event)">
+            <div style="font-size:3rem;">📂</div>
+            <div style="margin-top:8px;font-weight:600;color:#555;" data-ar="اختر ملفات JSON من المهندسين" data-en="Select engineer JSON files">اختر ملفات JSON من المهندسين</div>
+        </label>
+    </div>
+    <div id="mergeLog" style="background:white;padding:14px;border-radius:10px;margin-top:14px;"></div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal" onclick="if(event.target.id==='modal') closeModal()">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 id="modalTitle">—</h2>
+            <button class="close" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body" id="modalBody"></div>
+    </div>
+</div>
+
+<div class="image-viewer" id="viewer" onclick="closeViewer()">
+    <button class="close" onclick="closeViewer()">✕</button>
+    <div id="viewerContent"></div>
+</div>
+
+<script>
+const DATA = [{"phase": "Ph2", "pivot": "NP18", "well": "2A", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 4.21, "warning_sev": "red", "warning_cat": "توقفات Ph2", "warning_issue": "بئر 2B: مشاكل ري + توقفات متكررة Ph2", "warning_action": "🔴 خطة 2027: مضخة مطلوبة", "conflict": "جزئي", "weeds": "", "risk": "critical", "risk_score": 11}, {"phase": "Ph2", "pivot": "NP19", "well": "2B", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 4.61, "warning_sev": "red", "warning_cat": "توقفات Ph2", "warning_issue": "بئر 2B: نفس المشاكل", "warning_action": "🔴 خطة 2027: مضخة مطلوبة", "conflict": "جزئي", "weeds": "", "risk": "critical", "risk_score": 11}, {"phase": "Ph2", "pivot": "NP20", "well": "3", "power": "Motor", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 3.68, "warning_sev": "red", "warning_cat": "توقفات Ph2", "warning_issue": "بئر 3 Ph2: ضعف ري متكرر", "warning_action": "🟠 الخطة: جاهز — مراجعة مطلوبة", "conflict": "نعم", "weeds": "", "risk": "critical", "risk_score": 11}, {"phase": "Ph2", "pivot": "NP23", "well": "3", "power": "Motor", "area": 32, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 4.42, "warning_sev": "red", "warning_cat": "توقفات Ph2", "warning_issue": "بئر 3 Ph2: توقفات حصاد مكثفة", "warning_action": "🟠 الخطة: جاهز — راجع المشاكل التشغيلية (كهرباء)", "conflict": "نعم", "weeds": "", "risk": "critical", "risk_score": 11}, {"phase": "Ph2", "pivot": "NP35", "well": "12", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 3.09, "warning_sev": "red", "warning_cat": "بئر مزمن", "warning_issue": "بئر 12: ماكينة ضعيفة 1500 RPM — الأسوأ في المزرعة موسمين متتاليين", "warning_action": "🔴 استبدال الماكينة قبل الزراعة — الجاهزية في الخطة لا تضمن الأداء", "conflict": "نعم", "weeds": "", "risk": "critical", "risk_score": 11}, {"phase": "Ph2", "pivot": "NP37", "well": "12", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 2.9, "warning_sev": "red", "warning_cat": "بئر مزمن", "warning_issue": "بئر 12: نفس المشكلة — خسارة 250 طن موسم واحد", "warning_action": "🔴 استبدال الماكينة قبل الزراعة", "conflict": "نعم", "weeds": "", "risk": "critical", "risk_score": 11}, {"phase": "Ph2", "pivot": "NP38", "well": "24", "power": "Engine", "area": 34, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 4.7, "warning_sev": "red", "warning_cat": "توقفات Ph2", "warning_issue": "بئر 24: توقفات Ph2 المكثفة", "warning_action": "🟠 الخطة: جاهز — مراجعة التشغيل", "conflict": "نعم", "weeds": "", "risk": "critical", "risk_score": 11}, {"phase": "Ph1", "pivot": "N07", "well": "101", "power": "Motor", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.19, "warning_sev": "red", "warning_cat": "بئر مزمن", "warning_issue": "بئر 101: ضعف مزمن — تمت التغذية مرتين من بئر 102 (يضر بمحوري M06/M08)", "warning_action": "🟠 الخطة سجلت كهربائي \"جاهز\" — لكن مشكلة التغذية المتبادلة لم تحل", "conflict": "جزئي", "weeds": "رفيعة (حُقن عريضة)", "risk": "critical", "risk_score": 10}, {"phase": "Ph1", "pivot": "N09", "well": "101", "power": "Motor", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.37, "warning_sev": "red", "warning_cat": "بئر مزمن", "warning_issue": "بئر 101: نفس المشكلة", "warning_action": "🟠 حل جذري لبئر 101 قبل الموسم", "conflict": "جزئي", "weeds": "رفيعة (حُقن عريضة)", "risk": "critical", "risk_score": 10}, {"phase": "Ph1", "pivot": "D02", "well": "47", "power": "Engine", "area": 30, "last_crop": "TOMATO", "plan_status": "Pump Set", "prod26": null, "warning_sev": "red", "warning_cat": "بئر خاسر", "warning_issue": "بئر 47: مضخة مفقودة + أدى 2026 طماطم", "warning_action": "🔴 خاسر عند 2.05 ر/لتر - مرشح إلغاء", "conflict": "نعم", "weeds": "", "risk": "critical", "risk_score": 9}, {"phase": "Ph1", "pivot": "H09", "well": "74", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Pump", "prod26": 6.26, "warning_sev": "red", "warning_cat": "ماكينة W74", "warning_issue": "ماكينة W74: auto-stop متكرر 5+ مرات مايو 2026 + كسر سلندر", "warning_action": "🔴 خطة 2027: مضخة مطلوبة - أضف استبدال السلندر", "conflict": "جزئي", "weeds": "", "risk": "critical", "risk_score": 9}, {"phase": "Ph1", "pivot": "H11", "well": "74", "power": "Engine", "area": 29, "last_crop": "Wheat", "plan_status": "Pump", "prod26": 6.05, "warning_sev": "red", "warning_cat": "ماكينة W74", "warning_issue": "ماكينة W74: نفس المشكلة", "warning_action": "🔴 معالجة شاملة للماكينة قبل التشغيل", "conflict": "جزئي", "weeds": "", "risk": "critical", "risk_score": 9}, {"phase": "Ph1", "pivot": "H08", "well": "83", "power": "Engine", "area": 26, "last_crop": "Wheat", "plan_status": "Engine+Pump", "prod26": 4.93, "warning_sev": "orange", "warning_cat": "توقف حصاد", "warning_issue": "توقف أثناء الحصاد - ماكينة W74 المشتركة", "warning_action": "🟠 خطة 2027: مكينة + مضخة مطلوبة — تأكد من الاستبدال", "conflict": "لا", "weeds": "عريضة (حُقن عريضة)", "risk": "critical", "risk_score": 9}, {"phase": "Ph3", "pivot": "PH3 B10", "well": "22", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Engine", "prod26": 6.41, "warning_sev": "red", "warning_cat": "بئر مزمن", "warning_issue": "بئر 22 Ph3: نفس المشكلة", "warning_action": "🔴 معالجة شاملة", "conflict": "جزئي", "weeds": "", "risk": "critical", "risk_score": 9}, {"phase": "Ph3", "pivot": "PH3 C09", "well": "22", "power": "Engine", "area": 25, "last_crop": "Wheat", "plan_status": "Engine", "prod26": 6.82, "warning_sev": "red", "warning_cat": "بئر مزمن", "warning_issue": "بئر 22 Ph3: ضعف تدفق + RPM 1615", "warning_action": "🔴 خطة 2027: مكينة مطلوبة - استبدال كامل", "conflict": "جزئي", "weeds": "", "risk": "critical", "risk_score": 9}, {"phase": "Ph3", "pivot": "PH3 E04", "well": "31", "power": "Engine", "area": 30, "last_crop": "Fallow", "plan_status": "Pump Set", "prod26": null, "warning_sev": "red", "warning_cat": "بئر خاسر", "warning_issue": "بئر 31 Ph3: طقم ضخ + كل شيء مفقود", "warning_action": "🔴 خاسر عند 2.05 - مرشح إلغاء", "conflict": "نعم", "weeds": "", "risk": "critical", "risk_score": 9}, {"phase": "Ph1", "pivot": "N03", "well": "99", "power": "Engine", "area": 25, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.25, "warning_sev": "orange", "warning_cat": "بئر غير محدد", "warning_issue": "بئر 99: مشاكل محورين", "warning_action": "🟠 خطة 2027: نوع التشغيل غير محدد - تصنيف عاجل", "conflict": "نعم", "weeds": "عريضة", "risk": "critical", "risk_score": 8}, {"phase": "Ph1", "pivot": "K11", "well": "120", "power": "Engine", "area": 25, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 4.08, "warning_sev": "orange", "warning_cat": "توقف حصاد", "warning_issue": "توقف متكرر فترة الحصاد (مشترك مع الزيتون)", "warning_action": "🟡 مشترك مع الزيتون - جدولة ري دقيقة", "conflict": "لا", "weeds": "", "risk": "critical", "risk_score": 8}, {"phase": "Ph2", "pivot": "NP51", "well": "13", "power": "Engine", "area": 25, "last_crop": "Wheat", "plan_status": "Engine", "prod26": 4.51, "warning_sev": "orange", "warning_cat": "توقفات Ph2", "warning_issue": "بئر 13: توقفات Ph2", "warning_action": "🔴 خطة 2027: مكينة ديزل مطلوبة", "conflict": "جزئي", "weeds": "", "risk": "critical", "risk_score": 8}, {"phase": "Ph1", "pivot": "D01", "well": "20", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.93, "warning_sev": "orange", "warning_cat": "هواء بالبئر", "warning_issue": "بئر 20: هواء بالبئر + ضعف تدفق", "warning_action": "🟠 تطهير البئر قبل الزراعة", "conflict": "نعم", "weeds": "", "risk": "high", "risk_score": 7}, {"phase": "Ph1", "pivot": "D03", "well": "20", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.51, "warning_sev": "orange", "warning_cat": "هواء بالبئر", "warning_issue": "بئر 20: نفس المشكلة", "warning_action": "🟠 تطهير البئر", "conflict": "نعم", "weeds": "", "risk": "high", "risk_score": 7}, {"phase": "Ph1", "pivot": "N10", "well": "96", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.65, "warning_sev": "orange", "warning_cat": "توقف حصاد", "warning_issue": "يومين توقف: ديزل + ماكينة W96 خربانة", "warning_action": "🟡 ماكينة W96 تمت صيانتها أبريل - مراجعة", "conflict": "لا", "weeds": "", "risk": "high", "risk_score": 7}, {"phase": "Ph1", "pivot": "N12", "well": "96", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.36, "warning_sev": "orange", "warning_cat": "توقف حصاد", "warning_issue": "نفس المشكلة", "warning_action": "🟡 مراجعة", "conflict": "لا", "weeds": "رفيعة", "risk": "high", "risk_score": 7}, {"phase": "Ph1", "pivot": "N05", "well": "99", "power": "Engine", "area": 25, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.33, "warning_sev": "orange", "warning_cat": "بئر غير محدد", "warning_issue": "بئر 99: نفس المشكلة", "warning_action": "🟠 تصنيف عاجل", "conflict": "نعم", "weeds": "عريضة", "risk": "high", "risk_score": 7}, {"phase": "Ph1", "pivot": "A35", "well": "104", "power": "Motor", "area": 26, "last_crop": "Wheat", "plan_status": "V.Motor", "prod26": 5.4, "warning_sev": "orange", "warning_cat": "توقف كهرباء", "warning_issue": "بئر 104: توقف كهرباء 5 أيام 3-8 مايو 2026", "warning_action": "🟠 خطة 2027: محرك كهربائي رأسي مطلوب", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 7}, {"phase": "Ph1", "pivot": "M03", "well": "106", "power": "Motor", "area": 38, "last_crop": "Wheat", "plan_status": "V.Motor", "prod26": 5.84, "warning_sev": "orange", "warning_cat": "توقف محرك", "warning_issue": "توقف M3 متكرر مايو 2026", "warning_action": "🔴 خطة 2027: محرك كهربائي + مضخة مطلوبة", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 7}, {"phase": "Ph1", "pivot": "M05", "well": "106", "power": "Motor", "area": 30, "last_crop": "Wheat", "plan_status": "V.Motor", "prod26": 5.56, "warning_sev": "orange", "warning_cat": "توقف محرك", "warning_issue": "توقف M5 متكرر مايو", "warning_action": "🔴 خطة 2027: محرك + مكينة + مضخة مطلوبة", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 7}, {"phase": "Ph2", "pivot": "NP21", "well": "2A", "power": "Engine", "area": 26, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.4, "warning_sev": "orange", "warning_cat": "توقفات Ph2", "warning_issue": "بئر 2A: ضمن المجموعة المتضررة", "warning_action": "🟡 مراقبة أثناء الموسم", "conflict": "لا", "weeds": "", "risk": "high", "risk_score": 7}, {"phase": "Ph2", "pivot": "NP16", "well": "2B", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.63, "warning_sev": "orange", "warning_cat": "توقفات Ph2", "warning_issue": "بئر 2B: ضمن التوقفات الجماعية", "warning_action": "🟠 خطة 2027: مضخة مطلوبة", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 7}, {"phase": "Ph2", "pivot": "NP24", "well": "5", "power": "Engine", "area": 24, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.98, "warning_sev": "orange", "warning_cat": "توقفات Ph2", "warning_issue": "بئر 5: توقفات Ph2", "warning_action": "🟡 مراقبة", "conflict": "لا", "weeds": "", "risk": "high", "risk_score": 7}, {"phase": "Ph2", "pivot": "NP26", "well": "5", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.43, "warning_sev": "orange", "warning_cat": "توقفات Ph2", "warning_issue": "بئر 5: ضعف ري Ph2", "warning_action": "🟡 مراقبة", "conflict": "لا", "weeds": "", "risk": "high", "risk_score": 7}, {"phase": "Ph2", "pivot": "NP36", "well": "19", "power": "Engine", "area": 25, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.51, "warning_sev": "orange", "warning_cat": "ضعف ري", "warning_issue": "بئر 19: مشاكل ري", "warning_action": "🟠 الخطة: جاهز — مراجعة", "conflict": "نعم", "weeds": "", "risk": "high", "risk_score": 7}, {"phase": "Ph3", "pivot": "PH3 A14", "well": "14", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Engine", "prod26": 5.22, "warning_sev": "orange", "warning_cat": "بئر ضعيف Ph3", "warning_issue": "بئر 14 Ph3: ضعف أداء", "warning_action": "🟠 خطة 2027: مكينة ديزل مطلوبة", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 7}, {"phase": "Ph3", "pivot": "PH3 A15", "well": "14", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Engine", "prod26": 5.1, "warning_sev": "orange", "warning_cat": "بئر ضعيف Ph3", "warning_issue": "بئر 14 Ph3: نفس المشكلة", "warning_action": "🟠 خطة 2027: مكينة ديزل مطلوبة", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 7}, {"phase": "Ph3", "pivot": "PH3 C08", "well": "25", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Drilling, Pro, Pump", "prod26": 5.51, "warning_sev": "orange", "warning_cat": "كهربائي", "warning_issue": "بئر 25 Ph3: عطل كهربائي", "warning_action": "🟠 نفس التوصية", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 7}, {"phase": "Ph1", "pivot": "C07", "well": "9", "power": "Engine", "area": 25, "last_crop": "Tomato  Fresh", "plan_status": "Engine", "prod26": 6.02, "warning_sev": "orange", "warning_cat": "ماكينة ديزل", "warning_issue": "بئر 9: ماكينة ديزل مطلوبة (متعارض مع الحالة)", "warning_action": "🟠 خطة 2027: يحتاج تأكيد", "conflict": "نعم", "weeds": "", "risk": "high", "risk_score": 6}, {"phase": "Ph1", "pivot": "C04", "well": "19", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "orange", "warning_cat": "إطارات مفقودة", "warning_issue": "بئر 19: إطارات البرج 6 و7 مفقودة", "warning_action": "🟠 خطة 2027: إطارات مطلوبة", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 6}, {"phase": "Ph1", "pivot": "C06", "well": "19", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "orange", "warning_cat": "إطارات مفقودة", "warning_issue": "بئر 19: إطارات مفقودة", "warning_action": "🟠 خطة 2027: إطارات", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 6}, {"phase": "Ph1", "pivot": "C05", "well": "23", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Pump Set", "prod26": 7.02, "warning_sev": "orange", "warning_cat": "مضخة مفقودة", "warning_issue": "بئر 23: مضخة مفقودة", "warning_action": "🟠 خطة 2027: طقم ضخ مطلوب", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 6}, {"phase": "Ph1", "pivot": "B14", "well": "26", "power": "Engine", "area": 25, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "orange", "warning_cat": "ماكينة مفقودة", "warning_issue": "بئر 26: ماكينة ومضخة مفقودة (طماطم 2026)", "warning_action": "🟠 خطة 2027: مكينة ديزل مطلوبة", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 6}, {"phase": "Ph1", "pivot": "C08", "well": "29", "power": "Engine", "area": 40, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "orange", "warning_cat": "إطارات مفقودة", "warning_issue": "بئر 29: إطارات مفقودة", "warning_action": "🟠 خطة 2027: إطارات", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 6}, {"phase": "Ph1", "pivot": "C10", "well": "31", "power": "Engine", "area": 40, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "orange", "warning_cat": "إطارات مفقودة", "warning_issue": "بئر 31: إطارات مفقودة", "warning_action": "🟠 خطة 2027: إطارات", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 6}, {"phase": "Ph1", "pivot": "H10", "well": "83", "power": "Engine", "area": 32, "last_crop": "Wheat", "plan_status": "Engine+Pump", "prod26": 7.09, "warning_sev": "orange", "warning_cat": "توقف حصاد", "warning_issue": "توقف أثناء الحصاد", "warning_action": "🟠 خطة 2027: مكينة + مضخة مطلوبة", "conflict": "لا", "weeds": "", "risk": "high", "risk_score": 6}, {"phase": "Ph1", "pivot": "J01", "well": "88", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Pump", "prod26": 4.24, "warning_sev": "yellow", "warning_cat": "تأخر ري", "warning_issue": "تأخر ري بعد زراعة", "warning_action": "🟠 خطة 2027: مضخة مطلوبة", "conflict": "جزئي", "weeds": "عريضة", "risk": "high", "risk_score": 6}, {"phase": "Ph1", "pivot": "A36", "well": "104", "power": "Motor", "area": 26, "last_crop": "Wheat", "plan_status": "V.Motor", "prod26": 6.45, "warning_sev": "orange", "warning_cat": "توقف كهرباء", "warning_issue": "بئر 104: نفس المشكلة", "warning_action": "🟠 خطة 2027: محرك كهربائي مطلوب", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 6}, {"phase": "Ph1", "pivot": "J08", "well": "110", "power": "Engine", "area": 40, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.79, "warning_sev": "orange", "warning_cat": "ضعف تدفق", "warning_issue": "بئر 110: تصريف ضعيف RPM 1600", "warning_action": "🟠 فحص تدفق البئر قبل الزراعة", "conflict": "نعم", "weeds": "", "risk": "high", "risk_score": 6}, {"phase": "Ph1", "pivot": "L02", "well": "110", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.1, "warning_sev": "orange", "warning_cat": "ضعف تدفق", "warning_issue": "بئر 110: تصريف ضعيف", "warning_action": "🟠 فحص تدفق البئر", "conflict": "نعم", "weeds": "", "risk": "high", "risk_score": 6}, {"phase": "Ph1", "pivot": "K03", "well": "112", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Pump", "prod26": 7.18, "warning_sev": "orange", "warning_cat": "بئر 112", "warning_issue": "بئر 112: إشكالية تجهيز", "warning_action": "🟠 خطة 2027: مضخة مطلوبة", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 6}, {"phase": "Ph1", "pivot": "K05", "well": "112", "power": "Engine", "area": 32, "last_crop": "Wheat", "plan_status": "Pump", "prod26": 7.0, "warning_sev": "orange", "warning_cat": "بئر 112", "warning_issue": "بئر 112: نفس المشكلة", "warning_action": "🟠 خطة 2027: مضخة مطلوبة", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 6}, {"phase": "Ph2", "pivot": "NP49", "well": "13", "power": "Engine", "area": 25, "last_crop": "Wheat", "plan_status": "Engine", "prod26": 6.4, "warning_sev": "orange", "warning_cat": "توقفات Ph2", "warning_issue": "بئر 13: ضعف ري", "warning_action": "🔴 خطة 2027: مكينة ديزل مطلوبة", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 6}, {"phase": "Ph3", "pivot": "PH3 A02", "well": "11", "power": "Engine", "area": 35, "last_crop": "Oats", "plan_status": "Pump Set", "prod26": null, "warning_sev": "orange", "warning_cat": "طقم ضخ", "warning_issue": "بئر 11 Ph3: طقم ضخ مطلوب (شوفان 2026)", "warning_action": "🟠 خطة 2027: طقم ضخ", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 6}, {"phase": "Ph3", "pivot": "PH3 A03", "well": "11", "power": "Engine", "area": 35, "last_crop": "Oats", "plan_status": "Pump Set", "prod26": null, "warning_sev": "orange", "warning_cat": "طقم ضخ", "warning_issue": "بئر 11 Ph3: نفس", "warning_action": "🟠 خطة 2027: طقم ضخ", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 6}, {"phase": "Ph3", "pivot": "PH3 D01", "well": "24", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Engine", "prod26": 6.08, "warning_sev": "orange", "warning_cat": "مكينة", "warning_issue": "بئر 24 Ph3: مكينة ديزل مطلوبة", "warning_action": "🟠 خطة 2027: مكينة ديزل", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 6}, {"phase": "Ph3", "pivot": "PH3 D03", "well": "24", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Engine", "prod26": 6.46, "warning_sev": "orange", "warning_cat": "مكينة", "warning_issue": "بئر 24 Ph3: نفس", "warning_action": "🟠 خطة 2027: مكينة ديزل", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 6}, {"phase": "Ph3", "pivot": "PH3 C06", "well": "25", "power": "Engine", "area": 20, "last_crop": "Wheat", "plan_status": "Drilling, Pro, Pump", "prod26": 6.96, "warning_sev": "orange", "warning_cat": "كهربائي", "warning_issue": "بئر 25 Ph3: عطل كهربائي رشاش + ضعف ري", "warning_action": "🟠 خطة 2027: حفر ومضخة مطلوبة", "conflict": "جزئي", "weeds": "", "risk": "high", "risk_score": 6}, {"phase": "Ph1", "pivot": "A16", "well": "70", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.76, "warning_sev": "yellow", "warning_cat": "تأخر ري", "warning_issue": "تأخر تشغيل الري بعد الزراعة", "warning_action": "🟡 تنسيق مسبق مع قسم الري", "conflict": "لا", "weeds": "عريضة", "risk": "high", "risk_score": 5}, {"phase": "Ph1", "pivot": "J05", "well": "86", "power": "Motor", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 4.11, "warning_sev": "yellow", "warning_cat": "تأخر ري", "warning_issue": "تأخر ري + توقفات حصاد", "warning_action": "🟡 تنسيق مكثف", "conflict": "لا", "weeds": "", "risk": "high", "risk_score": 5}, {"phase": "Ph1", "pivot": "H02", "well": "88", "power": "Engine", "area": 39, "last_crop": "Wheat", "plan_status": "Pump", "prod26": 6.08, "warning_sev": "yellow", "warning_cat": "تأخر ري", "warning_issue": "تأخر تشغيل الري بعد الزراعة", "warning_action": "🟠 خطة 2027: مضخة مطلوبة — بالإضافة لتنسيق جدول الري", "conflict": "جزئي", "weeds": "عريضة", "risk": "medium", "risk_score": 4}, {"phase": "Ph1", "pivot": "M08", "well": "102", "power": "Engine", "area": 28, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 3.77, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "رفيعة + عريضة", "risk": "medium", "risk_score": 4}, {"phase": "Ph1", "pivot": "B03", "well": "6", "power": "Engine", "area": 40, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.52, "warning_sev": "yellow", "warning_cat": "رية ناقصة", "warning_issue": "رية ناقصة بعد تسميد الداب", "warning_action": "🟡 إلزامية ريتين متتاليتين بعد الداب", "conflict": "لا", "weeds": "", "risk": "medium", "risk_score": 3}, {"phase": "Ph1", "pivot": "B05", "well": "6", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.07, "warning_sev": "yellow", "warning_cat": "رية ناقصة", "warning_issue": "رية ناقصة", "warning_action": "🟡 نفس التوصية", "conflict": "لا", "weeds": "", "risk": "medium", "risk_score": 3}, {"phase": "Ph1", "pivot": "B04", "well": "8", "power": "Engine", "area": 40, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.68, "warning_sev": "yellow", "warning_cat": "رية ناقصة", "warning_issue": "رية ناقصة", "warning_action": "🟡 نفس التوصية", "conflict": "لا", "weeds": "", "risk": "medium", "risk_score": 3}, {"phase": "Ph1", "pivot": "B07", "well": "12", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.27, "warning_sev": "yellow", "warning_cat": "نقص ري انبات", "warning_issue": "البرج الخارجي غير منبت 30/12/2025", "warning_action": "🟡 متابعة الانبات في جميع الأبراج", "conflict": "لا", "weeds": "", "risk": "medium", "risk_score": 3}, {"phase": "Ph1", "pivot": "C03", "well": "24", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.22, "warning_sev": "yellow", "warning_cat": "رية ناقصة", "warning_issue": "رية ناقصة بعد الداب", "warning_action": "🟡 نفس التوصية", "conflict": "لا", "weeds": "", "risk": "medium", "risk_score": 3}, {"phase": "Ph1", "pivot": "D07", "well": "30", "power": "Engine", "area": 42, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.04, "warning_sev": "yellow", "warning_cat": "رية ناقصة", "warning_issue": "رية ناقصة + توقف ماكينة", "warning_action": "🟡 متابعة أثناء التسميد", "conflict": "لا", "weeds": "", "risk": "medium", "risk_score": 3}, {"phase": "Ph1", "pivot": "A17", "well": "72", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.18, "warning_sev": "yellow", "warning_cat": "تأخر ري", "warning_issue": "تأخر ري بعد زراعة", "warning_action": "🟡 تنسيق", "conflict": "لا", "weeds": "", "risk": "medium", "risk_score": 3}, {"phase": "Ph1", "pivot": "J03", "well": "86", "power": "Motor", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.58, "warning_sev": "yellow", "warning_cat": "تأخر ري", "warning_issue": "تأخر ري", "warning_action": "🟡 تنسيق", "conflict": "لا", "weeds": "", "risk": "medium", "risk_score": 3}, {"phase": "Ph1", "pivot": "N01", "well": "98", "power": "Engine", "area": 24, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 4.36, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "رفيعة", "risk": "medium", "risk_score": 3}, {"phase": "Ph1", "pivot": "M06", "well": "102", "power": "Engine", "area": 25, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.39, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "رفيعة + عريضة", "risk": "medium", "risk_score": 3}, {"phase": "Ph3", "pivot": "PH3 E05", "well": "32", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.47, "warning_sev": "yellow", "warning_cat": "بئر صغير", "warning_issue": "بئر 32 Ph3: مساحة صغيرة", "warning_action": "🔴 خاسر عند 2.05 - مرشح إلغاء", "conflict": "نعم", "weeds": "", "risk": "medium", "risk_score": 3}, {"phase": "Ph1", "pivot": "G01", "well": "66", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Pump Set", "prod26": 4.91, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "medium", "risk_score": 2}, {"phase": "Ph1", "pivot": "A14", "well": "68", "power": "Engine", "area": 22, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.87, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "عريضة (حُقن عريضة)", "risk": "medium", "risk_score": 2}, {"phase": "Ph1", "pivot": "A15", "well": "68", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.95, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "رفيعة", "risk": "medium", "risk_score": 2}, {"phase": "Ph2", "pivot": "NP34", "well": "8", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 4.65, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "medium", "risk_score": 2}, {"phase": "Ph2", "pivot": "NP05", "well": "14", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 4.76, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "medium", "risk_score": 2}, {"phase": "Ph2", "pivot": "NP42", "well": "25", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 4.82, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "medium", "risk_score": 2}, {"phase": "Ph2", "pivot": "NP48", "well": "26", "power": "Engine", "area": 25, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 3.75, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "medium", "risk_score": 2}, {"phase": "Ph3", "pivot": "PH3 C01", "well": "18", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 4.75, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "medium", "risk_score": 2}, {"phase": "Ph3", "pivot": "PH3 C03", "well": "18", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 4.62, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "medium", "risk_score": 2}, {"phase": "Ph1", "pivot": "D04", "well": "43", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.2, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 1}, {"phase": "Ph1", "pivot": "F15", "well": "53", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.98, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 1}, {"phase": "Ph1", "pivot": "H01", "well": "69", "power": "Engine", "area": 26, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.84, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "عريضة (حُقن عريضة)", "risk": "low", "risk_score": 1}, {"phase": "Ph1", "pivot": "H03", "well": "69", "power": "Engine", "area": 32, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.85, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 1}, {"phase": "Ph1", "pivot": "H07", "well": "72", "power": "Engine", "area": 25, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.55, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "رفيعة", "risk": "low", "risk_score": 1}, {"phase": "Ph1", "pivot": "N08", "well": "95", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.59, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 1}, {"phase": "Ph1", "pivot": "N02", "well": "98", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.19, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 1}, {"phase": "Ph1", "pivot": "L07", "well": "115", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.9, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 1}, {"phase": "Ph1", "pivot": "P13", "well": "122", "power": "Engine", "area": 20, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.88, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 1}, {"phase": "Ph2", "pivot": "NP32", "well": "7", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.16, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 1}, {"phase": "Ph2", "pivot": "NP45", "well": "8", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.94, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 1}, {"phase": "Ph2", "pivot": "NP01", "well": "17", "power": "Engine", "area": 24, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.1, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 1}, {"phase": "Ph2", "pivot": "NP47", "well": "19", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.74, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 1}, {"phase": "Ph2", "pivot": "NP55", "well": "20", "power": "Engine", "area": 25, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.99, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 1}, {"phase": "Ph2", "pivot": "NP52", "well": "21", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.56, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 1}, {"phase": "Ph2", "pivot": "NP44", "well": "25", "power": "Engine", "area": 25, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.36, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 1}, {"phase": "Ph2", "pivot": "NP46", "well": "26", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.41, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 1}, {"phase": "Ph3", "pivot": "PH3 D07", "well": "26", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.66, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 1}, {"phase": "Ph3", "pivot": "PH3 E01", "well": "28", "power": "Engine", "area": 33, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 5.09, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 1}, {"phase": "Ph1", "pivot": "B08", "well": "17", "power": "Motor", "area": 22, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.03, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "C11", "well": "27", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.08, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "F04", "well": "37", "power": "Engine", "area": 26, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "F06", "well": "37", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "F07", "well": "38", "power": "Motor", "area": 40, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "F08", "well": "38", "power": "Motor", "area": 40, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "F12", "well": "40", "power": "Motor", "area": 30, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "F14", "well": "40", "power": "Motor", "area": 30, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "F16", "well": "52", "power": "Engine", "area": 25, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "F18", "well": "52", "power": "Engine", "area": 37, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "G16", "well": "56", "power": "Engine", "area": 32, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.08, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "G17", "well": "56", "power": "Engine", "area": 32, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.06, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "G18", "well": "57", "power": "Engine", "area": 40, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.02, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "G14", "well": "58", "power": "Engine", "area": 27, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.0, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "G02", "well": "66", "power": "Engine", "area": 30, "last_crop": "Fallow", "plan_status": "Pump Set", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "P11", "well": "95", "power": "Engine", "area": 20, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.82, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "M02", "well": "100", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.1, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "M04", "well": "100", "power": "Engine", "area": 32, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.32, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "M10", "well": "103", "power": "Engine", "area": 26, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.28, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "N11", "well": "103", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.94, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "J10", "well": "105", "power": "Engine", "area": 25, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.59, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "M01", "well": "105", "power": "Engine", "area": 32, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.12, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "L04", "well": "107", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.08, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "L06", "well": "107", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.24, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "J04", "well": "111", "power": "Motor", "area": 30, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "J06", "well": "111", "power": "Motor", "area": 30, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "L01", "well": "113", "power": "Engine", "area": 30, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.17, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "L03", "well": "113", "power": "Engine", "area": 23, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.6, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "K01", "well": "118", "power": "Motor", "area": 35, "last_crop": "Wheat", "plan_status": "V.Motor", "prod26": 7.09, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "K02", "well": "118", "power": "Motor", "area": 40, "last_crop": "Wheat", "plan_status": "V.Motor", "prod26": 7.05, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "K07", "well": "119", "power": "Engine", "area": 40, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.04, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "K09", "well": "119", "power": "Engine", "area": 32, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.38, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "A41", "well": "121", "power": "Motor", "area": 30, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "A42", "well": "121", "power": "Motor", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "K04", "well": "123", "power": "Motor", "area": 25, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "L05", "well": "123", "power": "Motor", "area": 25, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph1", "pivot": "M09", "well": "125", "power": "Motor", "area": 25, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.1, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph2", "pivot": "NP14", "well": "1", "power": "Engine", "area": 32, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.82, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph2", "pivot": "NP17", "well": "1", "power": "Engine", "area": 24, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.06, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph2", "pivot": "NP41", "well": "7", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.0, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph2", "pivot": "NP07", "well": "10", "power": "Engine", "area": 35, "last_crop": "Oats", "plan_status": "Pump Set", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph2", "pivot": "NP08", "well": "10", "power": "Engine", "area": 35, "last_crop": "Oats", "plan_status": "Pump Set", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph2", "pivot": "NP06", "well": "14", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.52, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph2", "pivot": "NP02", "well": "17", "power": "Engine", "area": 24, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.92, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph2", "pivot": "NP53", "well": "20", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.2, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph2", "pivot": "NP50", "well": "21", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.15, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph2", "pivot": "NP40", "well": "24", "power": "Engine", "area": 24, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.19, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 A06", "well": "8", "power": "Engine", "area": 33, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 A07", "well": "8", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 A08", "well": "9", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 A09", "well": "9", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 A04", "well": "10", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 B03", "well": "10", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 A10", "well": "12", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 A11", "well": "12", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 A12", "well": "13", "power": "Engine", "area": 25, "last_crop": "TOMATO", "plan_status": "Well Repair (خطة 2027)", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 A13", "well": "13", "power": "Engine", "area": 29, "last_crop": "TOMATO", "plan_status": "Well Repair (خطة 2027)", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 A05", "well": "15", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 B01", "well": "15", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 B05", "well": "16", "power": "Engine", "area": 25, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 B07", "well": "16", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 B02", "well": "17", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 B04", "well": "17", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 B06", "well": "19", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 B08", "well": "19", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 C05", "well": "20", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 C07", "well": "20", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 C02", "well": "21", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 C04", "well": "21", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 A01", "well": "23", "power": "Engine", "area": 25, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 B09", "well": "23", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 D05", "well": "26", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.96, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 D02", "well": "27", "power": "Engine", "area": 35, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 D04", "well": "27", "power": "Engine", "area": 30, "last_crop": "TOMATO", "plan_status": "Ok", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 E02", "well": "28", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 7.34, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 D06", "well": "29", "power": "Engine", "area": 35, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.44, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": "Ph3", "pivot": "PH3 D08", "well": "29", "power": "Engine", "area": 23, "last_crop": "Wheat", "plan_status": "Ok", "prod26": 6.41, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}, {"phase": null, "pivot": "175", "well": "—", "power": "—", "area": 5500, "last_crop": "—", "plan_status": "—", "prod26": null, "warning_sev": "", "warning_cat": "", "warning_issue": "", "warning_action": "", "conflict": "", "weeds": "", "risk": "low", "risk_score": 0}];
+const OPS = [{"id": "prep_cleanup", "name_ar": "رفع البالات/تنظيف البقايا", "name_en": "Bale removal / cleanup", "type": "prep", "day": -27, "icon": "🧹"}, {"id": "prep_tape", "name_ar": "تنظيف التي تيب", "name_en": "T-tape cleaning", "type": "prep", "day": -21, "icon": "💧"}, {"id": "prep_sand", "name_ar": "نقلات الرمل", "name_en": "Sand transport", "type": "prep", "day": -20, "icon": "🏗️"}, {"id": "prep_road", "name_ar": "ردم مسار الإطارات", "name_en": "Tire-track filling", "type": "prep", "day": -18, "icon": "🚜"}, {"id": "prep_bulldozer", "name_ar": "أعمال البلدوزر", "name_en": "Bulldozer works", "type": "prep", "day": -18, "icon": "🚜"}, {"id": "prep_irr_start", "name_ar": "بداية ري التجهيز", "name_en": "Prep irrigation start", "type": "prep", "day": -15, "icon": "💧"}, {"id": "prep_chisel1", "name_ar": "حراثة إزميلية 1", "name_en": "Chisel plow 1", "type": "prep", "day": -12, "icon": "⚙️"}, {"id": "prep_disc1", "name_ar": "دسك 1", "name_en": "Disc 1", "type": "prep", "day": -10, "icon": "⚙️"}, {"id": "prep_chisel2", "name_ar": "حراثة إزميلية 2", "name_en": "Chisel plow 2", "type": "prep", "day": -8, "icon": "⚙️"}, {"id": "prep_disc2", "name_ar": "دسك 2", "name_en": "Disc 2", "type": "prep", "day": -6, "icon": "⚙️"}, {"id": "fert_dap_pre", "name_ar": "سماد الداب (قبل الزراعة)", "name_en": "DAP (pre-plant)", "type": "fert", "day": -5, "icon": "🧪", "rate": "200 kg/ha"}, {"id": "prep_disc3", "name_ar": "دسك 3 (خلط الداب)", "name_en": "Disc 3 (DAP mixing)", "type": "prep", "day": -4, "icon": "⚙️"}, {"id": "prep_leveling", "name_ar": "تسوية", "name_en": "Leveling", "type": "prep", "day": -3, "icon": "🚜"}, {"id": "pest_sakura", "name_ar": "مبيد Sakura 85% (قبل الإنبات)", "name_en": "Sakura 85% (pre-emergence)", "type": "pesticide", "day": -1, "icon": "🧴", "rate": "220 g/ha"}, {"id": "planting", "name_ar": "✅ تاريخ الزراعة", "name_en": "✅ Planting date", "type": "planting", "day": 0, "icon": "🌾", "critical": true}, {"id": "irr_start", "name_ar": "بداية ري المحصول", "name_en": "Crop irrigation start", "type": "irrigation", "day": 1, "icon": "💧"}, {"id": "fert_urea1", "name_ar": "يوريا 46% - دفعة 1", "name_en": "Urea 46% - split 1", "type": "fert", "day": 20, "icon": "🧪", "rate": "80 kg/ha"}, {"id": "fert_green2528", "name_ar": "Green Sand 25-25-18", "name_en": "Green Sand 25-25-18", "type": "fert", "day": 22, "icon": "🧪", "rate": "15 kg/ha"}, {"id": "pest_broad", "name_ar": "Bromoxynil (حشائش عريضة)", "name_en": "Bromoxynil (broad-leaf)", "type": "pesticide", "day": 28, "icon": "🧴", "rate": "1.9 L/ha"}, {"id": "pest_granite", "name_ar": "Granite 5% (حشائش رفيعة)", "name_en": "Granite 5% (grasses)", "type": "pesticide", "day": 30, "icon": "🧴", "rate": "1 L/ha"}, {"id": "fert_urea2", "name_ar": "يوريا 46% - دفعة 2", "name_en": "Urea 46% - split 2", "type": "fert", "day": 40, "icon": "🧪", "rate": "80 kg/ha"}, {"id": "fert_fertimax", "name_ar": "Fertimax 0-52-34", "name_en": "Fertimax 0-52-34", "type": "fert", "day": 42, "icon": "🧪", "rate": "15 kg/ha"}, {"id": "fert_micro1", "name_ar": "العناصر الصغرى Vitamix", "name_en": "Vitamix (micronutrients)", "type": "fert", "day": 45, "icon": "🧪", "rate": "3 kg/ha"}, {"id": "fert_urea3", "name_ar": "يوريا 46% - دفعة 3", "name_en": "Urea 46% - split 3", "type": "fert", "day": 55, "icon": "🧪", "rate": "80 kg/ha"}, {"id": "fert_potassium", "name_ar": "سلفات بوتاسيوم", "name_en": "Potassium sulphate", "type": "fert", "day": 58, "icon": "🧪", "rate": "50 kg/ha"}, {"id": "fert_green0528", "name_ar": "Green Sand 2-52-8", "name_en": "Green Sand 2-52-8", "type": "fert", "day": 60, "icon": "🧪", "rate": "15 kg/ha"}, {"id": "pest_fungicide", "name_ar": "مبيد فطري Tilzole", "name_en": "Tilzole 250EC fungicide", "type": "pesticide", "day": 65, "icon": "🧴", "rate": "600 mL/ha"}, {"id": "fert_urea4", "name_ar": "يوريا 46% - دفعة 4", "name_en": "Urea 46% - split 4", "type": "fert", "day": 70, "icon": "🧪", "rate": "60 kg/ha"}, {"id": "fert_humic", "name_ar": "حمض الهيوميك", "name_en": "Humic acid", "type": "fert", "day": 72, "icon": "🧪", "rate": "1 kg/ha"}, {"id": "fert_mg", "name_ar": "سلفات مغنسيوم", "name_en": "Magnesium sulphate", "type": "fert", "day": 75, "icon": "🧪", "rate": "5 kg/ha"}, {"id": "fert_zn", "name_ar": "شيلات الزنك", "name_en": "Zinc chelate", "type": "fert", "day": 78, "icon": "🧪", "rate": "1 kg/ha"}, {"id": "fert_cu", "name_ar": "شيلات النحاس", "name_en": "Copper chelate", "type": "fert", "day": 82, "icon": "🧪", "rate": "1 kg/ha"}, {"id": "stage_heading", "name_ar": "🌾 طرد السنابل", "name_en": "🌾 Heading stage", "type": "stage", "day": 90, "icon": "🌾"}, {"id": "stage_milk", "name_ar": "🌾 طور الحليب", "name_en": "🌾 Milk stage", "type": "stage", "day": 105, "icon": "🌾"}, {"id": "stage_dough", "name_ar": "🌾 طور العجين", "name_en": "🌾 Dough stage", "type": "stage", "day": 120, "icon": "🌾"}, {"id": "irr_last", "name_ar": "آخر رية", "name_en": "Last irrigation", "type": "irrigation", "day": 135, "icon": "💧"}, {"id": "harvest", "name_ar": "✅ تاريخ الحصاد", "name_en": "✅ Harvest date", "type": "harvest", "day": 150, "icon": "🌾", "critical": true}];
+let ENGINEERS = {};
+const STORAGE_KEY = 'wheat2027_v4_master';
+const LANG_KEY = 'wheat2027_lang';
+const ASSIGN_KEY = 'wheat2027_assignments';
+const ENGINEERS_KEY = 'wheat2027_engineers';
+const EMBEDDED_ENGINEER = null;
+
+let TRACKING = {};
+let ASSIGNMENTS = {};
+let currentPivot = null;
+let LANG = 'ar';
+
+const T = {
+    ar: { notStarted:'لم يبدأ', prep:'تجهيز', planted:'مزروع', harvested:'محصود',
+        done:'مكتمل', progress:'جاري', pending:'مجدول', day:'يوم',
+        allDone:'✅ انتهت جميع العمليات', noDateSet:'لم يُحدد تاريخ الزراعة',
+        confirmClear:'⚠️ مسح جميع البيانات؟', confirmTwice:'⚠️ تأكيد ثاني؟',
+        doneDate:'✓ تم', inProgress:'⚡ جاري', notYet:'ضع ✓',
+        enterDate:'اختر التاريخ أولاً', deleteNote:'حذف الملاحظة؟', delete:'حذف؟',
+        importConfirm:'سيستبدل البيانات. متابعة؟', invalidFile:'❌ ملف غير صالح',
+        done3:'✅ تم', age:'العمر', toolLarge:'فيديو كبير. متابعة؟' },
+    en: { notStarted:'Not started', prep:'Prep', planted:'Planted', harvested:'Harvested',
+        done:'Complete', progress:'In progress', pending:'Scheduled', day:'d',
+        allDone:'✅ All ops done', noDateSet:'Planting date not set',
+        confirmClear:'⚠️ Clear all data?', confirmTwice:'⚠️ Confirm again?',
+        doneDate:'✓ Done', inProgress:'⚡ In progress', notYet:'Mark ✓',
+        enterDate:'Select date first', deleteNote:'Delete note?', delete:'Delete?',
+        importConfirm:'Replace data?', invalidFile:'❌ Invalid file',
+        done3:'✅ Done', age:'Age', toolLarge:'Large video. Continue?' }
+};
+
+function applyLang() {
+    const dir = LANG === 'ar' ? 'rtl' : 'ltr';
+    document.getElementById('htmlRoot').setAttribute('dir', dir);
+    document.getElementById('htmlRoot').setAttribute('lang', LANG);
+    document.getElementById('bodyRoot').setAttribute('dir', dir);
+    document.getElementById('langBtn').textContent = LANG === 'ar' ? '🌐 EN' : '🌐 AR';
+    document.querySelectorAll('[data-ar]').forEach(el => {
+        const txt = el.getAttribute('data-' + LANG);
+        if (txt !== null) el.textContent = txt;
+    });
+    document.querySelectorAll('[data-placeholder-ar]').forEach(el => {
+        const txt = el.getAttribute('data-placeholder-' + LANG);
+        if (txt !== null) el.setAttribute('placeholder', txt);
+    });
+    renderAll();
+}
+function toggleLang() {
+    LANG = LANG === 'ar' ? 'en' : 'ar';
+    try { localStorage.setItem(LANG_KEY, LANG); } catch(e){}
+    applyLang();
+}
+
+function loadTracking() {
+    try { TRACKING = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { TRACKING = {}; }
+    try { ASSIGNMENTS = JSON.parse(localStorage.getItem(ASSIGN_KEY) || '{}'); } catch(e) { ASSIGNMENTS = {}; }
+    try { ENGINEERS = JSON.parse(localStorage.getItem(ENGINEERS_KEY) || '{}'); } catch(e) { ENGINEERS = {}; }
+}
+function saveTracking() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(TRACKING)); } catch(e) { alert('⚠️ Storage full'); }
+}
+function saveAssignments() { try { localStorage.setItem(ASSIGN_KEY, JSON.stringify(ASSIGNMENTS)); } catch(e){} }
+function saveEngineers() { try { localStorage.setItem(ENGINEERS_KEY, JSON.stringify(ENGINEERS)); } catch(e){} }
+function getPivotData(p) {
+    if (!TRACKING[p]) TRACKING[p] = { plantingDate:null, operations:{}, notes:[], images:[], videos:[], updated:null };
+    const t = TRACKING[p];
+    if (!t.operations) t.operations = {};
+    if (!t.notes) t.notes = [];
+    if (!t.images) t.images = [];
+    if (!t.videos) t.videos = [];
+    return t;
+}
+
+function addDays(d,days){ if(!d) return null; const x=new Date(d); x.setDate(x.getDate()+days); return x.toISOString().slice(0,10); }
+function daysBetween(d1,d2){ if(!d1||!d2) return null; return Math.round((new Date(d2)-new Date(d1))/86400000); }
+function fmtDate(iso){ if(!iso) return '—'; return new Date(iso).toLocaleDateString(LANG==='ar'?'ar-SA':'en-GB'); }
+function fmtDateTime(iso){ if(!iso) return '—'; const d=new Date(iso); return d.toLocaleDateString(LANG==='ar'?'ar-SA':'en-GB')+' '+d.toLocaleTimeString(LANG==='ar'?'ar-SA':'en-GB',{hour:'2-digit',minute:'2-digit'}); }
+function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function L(k){ return T[LANG][k] || k; }
+function opName(op){ return op['name_'+LANG] || op.name_ar; }
+
+function getPivotStatus(pivot) {
+    const t = TRACKING[pivot];
+    if (!t || !t.plantingDate) {
+        if (t && Object.keys(t.operations||{}).some(k => OPS.find(o=>o.id===k)?.type==='prep' && (t.operations[k].status==='done'||t.operations[k].status==='in-progress'))) return 'prep';
+        return 'not-started';
+    }
+    if (t.operations?.harvest?.actualDate) return 'harvested';
+    return 'planted';
+}
+function getProgress(pivot) {
+    const t = TRACKING[pivot];
+    if (!t) return 0;
+    const done = Object.values(t.operations||{}).filter(o => o.status==='done').length;
+    return Math.round((done / OPS.length) * 100);
+}
+
+function renderKPIs() {
+    const relevant = EMBEDDED_ENGINEER ? DATA.filter(r => ASSIGNMENTS[r.pivot] === EMBEDDED_ENGINEER) : DATA;
+    const total = relevant.length;
+    const inPrep = relevant.filter(r => getPivotStatus(r.pivot) === 'prep').length;
+    const planted = relevant.filter(r => TRACKING[r.pivot]?.plantingDate).length;
+    const notStarted = relevant.filter(r => getPivotStatus(r.pivot) === 'not-started').length;
+    const harvested = relevant.filter(r => getPivotStatus(r.pivot) === 'harvested').length;
+    const totalArea = relevant.reduce((s,r)=>s+(r.area||0),0);
+    const plantedArea = relevant.filter(r=>TRACKING[r.pivot]?.plantingDate).reduce((s,r)=>s+(r.area||0),0);
+    
+    const kpis = [
+        {label: LANG==='ar'?'إجمالي المحاور':'Total pivots', val: total, cls:''},
+        {label: LANG==='ar'?'⚪ لم يبدأ':'⚪ Not started', val: notStarted, cls:'pending'},
+        {label: LANG==='ar'?'🟡 تجهيز':'🟡 Prep', val: inPrep, cls:'progress'},
+        {label: LANG==='ar'?'🟢 مزروع':'🟢 Planted', val: planted, cls:'planted'},
+        {label: LANG==='ar'?'🔵 محصود':'🔵 Harvested', val: harvested, cls:'done'},
+        {label: LANG==='ar'?'📊 المساحة المزروعة':'📊 Planted area', val: plantedArea.toLocaleString()+(LANG==='ar'?' هـ':' ha'), cls:'planted'},
+    ];
+    if (!EMBEDDED_ENGINEER) {
+        kpis.push({label: LANG==='ar'?'👥 مهندسون':'👥 Engineers', val: Object.keys(ENGINEERS).length, cls:''});
+    }
+    const totalWaMsgs = Object.values(TRACKING).reduce((s,t) => s + ((t.whatsapp||[]).length), 0);
+    if (totalWaMsgs > 0) {
+        kpis.push({label: LANG==='ar'?'📱 رسائل واتساب':'📱 WhatsApp msgs', val: totalWaMsgs, cls:''});
+    }
+    document.getElementById('kpiGrid').innerHTML = kpis.map(k =>
+        `<div class="kpi ${k.cls}"><div class="value">${k.val}</div><div class="label">${k.label}</div></div>`
+    ).join('');
+    
+    const sel = document.getElementById('engineerFilter');
+    if (sel && !EMBEDDED_ENGINEER) {
+        const current = sel.value;
+        sel.innerHTML = `<option value="">${LANG==='ar'?'الكل':'All'}</option>` + 
+            Object.entries(ENGINEERS).map(([k,v]) => `<option value="${k}">${v[LANG]||v.ar} — ${v.zone}</option>`).join('') +
+            `<option value="unassigned">${LANG==='ar'?'غير معين':'Unassigned'}</option>`;
+        sel.value = current;
+    }
+}
+
+function renderTable() {
+    const engineerF = document.getElementById('engineerFilter')?.value || '';
+    const status = document.getElementById('statusFilter')?.value || '';
+    const phase = document.getElementById('phaseFilter')?.value || '';
+    const search = (document.getElementById('searchFilter')?.value || '').toLowerCase();
+    
+    let base = DATA;
+    if (EMBEDDED_ENGINEER) base = DATA.filter(r => ASSIGNMENTS[r.pivot] === EMBEDDED_ENGINEER);
+    
+    const filtered = base.filter(r => {
+        const assigned = ASSIGNMENTS[r.pivot];
+        if (engineerF === 'unassigned') { if (assigned) return false; }
+        else if (engineerF && assigned !== engineerF) return false;
+        if (status && getPivotStatus(r.pivot) !== status) return false;
+        if (phase && r.phase !== phase) return false;
+        if (search) { if (!(r.pivot+' '+r.well).toLowerCase().includes(search)) return false; }
+        return true;
+    });
+    
+    const rc = document.getElementById('resultCount');
+    if (rc) rc.textContent = `${filtered.length} ${LANG==='ar'?'محور':'pivots'}`;
+    const tb = document.getElementById('tableBody');
+    if (!tb) return;
+    
+    tb.innerHTML = filtered.map((r,i) => {
+        const t = TRACKING[r.pivot];
+        const pStatus = getPivotStatus(r.pivot);
+        const progress = getProgress(r.pivot);
+        const plantingDate = t?.plantingDate;
+        const age = plantingDate ? daysBetween(plantingDate, new Date().toISOString().slice(0,10)) : null;
+        const assigned = ASSIGNMENTS[r.pivot];
+        const engClass = assigned || 'unassigned';
+        const statusLabels = {
+            'not-started':`<span class="status-dot not-started"></span>${L('notStarted')}`,
+            'prep':`<span class="status-dot prep"></span>${L('prep')}`,
+            'planted':`<span class="status-dot planted"></span>${L('planted')}`,
+            'harvested':`<span class="status-dot harvested"></span>${L('harvested')}`,
+        };
+        return `
+            <tr onclick="openModal('${r.pivot}')">
+                <td>${i+1}</td>
+                <td><span class="phase-badge ${r.phase}">${r.phase}</span></td>
+                <td><span class="pivot-name">${r.pivot}</span></td>
+                <td>${r.well}</td>
+                <td>${r.area}</td>
+                <td>${assigned && ENGINEERS[assigned] ? `<span class="engineer-tag" style="background:${ENGINEERS[assigned].color || '#555'};">${(ENGINEERS[assigned][LANG]||ENGINEERS[assigned].ar).split(' ').slice(1).join(' ') || (ENGINEERS[assigned][LANG]||ENGINEERS[assigned].ar)}</span>` : `<span class="engineer-tag unassigned">${LANG==='ar'?'غير معين':'Unassigned'}</span>`}</td>
+                <td><span class="risk-tag ${r.risk}">${{critical:'🔴',high:'🟠',medium:'🟡',low:'✅'}[r.risk]}</span></td>
+                <td>${plantingDate ? fmtDate(plantingDate) : '—'}</td>
+                <td>${age!==null ? age+(LANG==='ar'?'ي':'d') : '—'}</td>
+                <td>${statusLabels[pStatus]}</td>
+                <td><div class="progress-bar ${progress<30?'low':''}"><div class="fill" style="width:${progress}%"></div></div><div style="font-size:0.68rem;margin-top:2px;">${progress}%</div></td>
+            </tr>`;
+    }).join('');
+}
+
+
+// ═══ ENGINEER MANAGEMENT ═══
+const COLORS_POOL = ['#2D6A4F','#D4A017','#2874A6','#6B2737','#C0392B','#8E44AD','#16A085','#F39C12','#2C3E50','#C70039'];
+
+function addEngineer() {
+    const nameAr = document.getElementById('engNameAr').value.trim();
+    const nameEn = document.getElementById('engNameEn').value.trim();
+    const zone = document.getElementById('engZone').value.trim();
+    if (!nameAr || !zone) {
+        alert(LANG==='ar'?'الاسم العربي والمنطقة مطلوبان':'Arabic name and zone are required');
+        return;
+    }
+    // Generate unique key
+    const existingKeys = Object.keys(ENGINEERS);
+    let key = 'eng' + (existingKeys.length + 1);
+    while (ENGINEERS[key]) key = 'eng' + (parseInt(key.slice(3)) + 1);
+    
+    // Assign a color
+    const usedColors = Object.values(ENGINEERS).map(e => e.color).filter(Boolean);
+    let color = COLORS_POOL.find(c => !usedColors.includes(c)) || COLORS_POOL[existingKeys.length % COLORS_POOL.length];
+    
+    ENGINEERS[key] = {
+        ar: nameAr,
+        en: nameEn || nameAr,
+        zone: zone,
+        color: color
+    };
+    saveEngineers();
+    document.getElementById('engNameAr').value = '';
+    document.getElementById('engNameEn').value = '';
+    document.getElementById('engZone').value = '';
+    renderEngineers();
+    renderAll();
+}
+
+function editEngineer(key) {
+    const info = ENGINEERS[key];
+    if (!info) return;
+    const nameAr = prompt(LANG==='ar'?'الاسم بالعربي:':'Arabic name:', info.ar);
+    if (nameAr === null) return;
+    const nameEn = prompt(LANG==='ar'?'الاسم بالإنجليزي:':'English name:', info.en);
+    if (nameEn === null) return;
+    const zone = prompt(LANG==='ar'?'المنطقة:':'Zone:', info.zone);
+    if (zone === null) return;
+    ENGINEERS[key] = { ...info, ar: nameAr.trim() || info.ar, en: nameEn.trim() || info.en, zone: zone.trim() || info.zone };
+    saveEngineers();
+    renderEngineers();
+    renderAll();
+}
+
+function deleteEngineer(key) {
+    const info = ENGINEERS[key];
+    if (!info) return;
+    const assignedCount = Object.values(ASSIGNMENTS).filter(v => v === key).length;
+    const msg = assignedCount > 0 
+        ? `${LANG==='ar'?'سيصبح':'This will unassign'} ${assignedCount} ${LANG==='ar'?'محور بدون تعيين. حذف':'pivots. Delete'} "${info.ar}"?`
+        : `${LANG==='ar'?'حذف':'Delete'} "${info.ar}"?`;
+    if (!confirm(msg)) return;
+    // Unassign pivots
+    Object.keys(ASSIGNMENTS).forEach(p => { if (ASSIGNMENTS[p] === key) delete ASSIGNMENTS[p]; });
+    delete ENGINEERS[key];
+    saveEngineers();
+    saveAssignments();
+    renderEngineers();
+    renderAll();
+}
+
+function renderEngineers() {
+    const ep = document.getElementById('engineerPanel');
+    if (!ep) return;
+    const counts = {};
+    DATA.forEach(r => {
+        const e = ASSIGNMENTS[r.pivot] || 'unassigned';
+        counts[e] = (counts[e] || 0) + 1;
+    });
+    
+    const addForm = `
+        <div style="background:#F0F8FF;padding:16px;border-radius:10px;margin-bottom:14px;border:2px dashed #2874A6;">
+            <h3 style="color:#2874A6;margin-bottom:10px;font-size:1rem;">➕ ${LANG==='ar'?'إضافة مهندس جديد':'Add new engineer'}</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;">
+                <div>
+                    <label style="font-size:0.75rem;color:#555;display:block;margin-bottom:3px;">${LANG==='ar'?'الاسم (عربي)':'Name (Arabic)'} *</label>
+                    <input type="text" id="engNameAr" placeholder="${LANG==='ar'?'م. محمد علي':'م. محمد علي'}" style="width:100%;padding:7px 10px;border:1px solid #CED4DA;border-radius:6px;font-family:inherit;font-size:0.85rem;">
+                </div>
+                <div>
+                    <label style="font-size:0.75rem;color:#555;display:block;margin-bottom:3px;">${LANG==='ar'?'الاسم (إنجليزي)':'Name (English)'}</label>
+                    <input type="text" id="engNameEn" placeholder="Eng. Mohamed Ali" style="width:100%;padding:7px 10px;border:1px solid #CED4DA;border-radius:6px;font-family:inherit;font-size:0.85rem;">
+                </div>
+                <div>
+                    <label style="font-size:0.75rem;color:#555;display:block;margin-bottom:3px;">${LANG==='ar'?'المنطقة':'Zone'} *</label>
+                    <input type="text" id="engZone" placeholder="${LANG==='ar'?'منطقة 1':'Zone 1'}" style="width:100%;padding:7px 10px;border:1px solid #CED4DA;border-radius:6px;font-family:inherit;font-size:0.85rem;">
+                </div>
+                <button class="btn btn-primary" onclick="addEngineer()" style="padding:8px 16px;">✓ ${LANG==='ar'?'إضافة':'Add'}</button>
+            </div>
+        </div>`;
+    
+    const engineersList = Object.keys(ENGINEERS).length === 0 
+        ? `<div style="text-align:center;padding:40px;color:#999;font-style:italic;background:#F8FAF9;border-radius:10px;">
+            ${LANG==='ar' ? '📭 لا يوجد مهندسون بعد — أضف أول مهندس أعلاه' : '📭 No engineers yet — add the first engineer above'}
+          </div>`
+        : Object.entries(ENGINEERS).map(([key, info]) => {
+            const count = counts[key] || 0;
+            const areaSum = DATA.filter(r => ASSIGNMENTS[r.pivot]===key).reduce((s,r)=>s+(r.area||0),0);
+            const color = info.color || '#2D6A4F';
+            return `
+                <div class="engineer-card" style="border-right-color:${color} !important;">
+                    <div>
+                        <div class="ename">${info[LANG]||info.ar}</div>
+                        <div class="ezone">${LANG==='ar'?'المنطقة':'Zone'}: ${info.zone} | ${count} ${LANG==='ar'?'محور':'pivots'} | ${areaSum} ${LANG==='ar'?'هـ':'ha'}</div>
+                    </div>
+                    <div class="ecount">${count}</div>
+                    <button class="btn btn-primary" onclick="viewEngineerPivots('${key}')">${LANG==='ar'?'عرض':'View'}</button>
+                    <button class="btn btn-info" onclick="generateEngineerFile('${key}')">${LANG==='ar'?'📤 ملف':'📤 File'}</button>
+                    <button class="btn" style="background:#D4A017;" onclick="editEngineer('${key}')">✏️</button>
+                    <button class="btn btn-danger" onclick="deleteEngineer('${key}')">🗑️</button>
+                </div>`;
+        }).join('');
+    
+    ep.innerHTML = addForm + engineersList + `
+        <div style="margin-top:16px;padding:12px;background:#F8FAF9;border-radius:8px;font-size:0.85rem;color:#555;">
+            <strong style="color:#1B4332;">${LANG==='ar'?'ملاحظة:':'Note:'}</strong>
+            ${LANG==='ar' ? 'أضف المهندسين أولاً، ثم افتح أي محور من الجدول الرئيسي واختر المهندس المسؤول عنه.' : 'Add engineers first, then open any pivot from the main table and select the responsible engineer.'}
+        </div>`;
+}
+
+function viewEngineerPivots(key) {
+    document.getElementById('engineerFilter').value = key;
+    switchTab(0);
+}
+
+function openModal(pivot) {
+    currentPivot = pivot;
+    currentWaFilter = 'all';
+    const rec = DATA.find(r => r.pivot === pivot);
+    if (!rec) return;
+    const t = getPivotData(pivot);
+    const assigned = ASSIGNMENTS[pivot];
+    
+    document.getElementById('modalTitle').textContent = `${pivot} — ${rec.phase} / ${LANG==='ar'?'بئر':'Well'} ${rec.well}`;
+    
+    const engineerAssignHtml = EMBEDDED_ENGINEER ? '' : `
+        <div style="background:#F0F8FF;padding:12px;border-radius:8px;margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <strong style="color:#2874A6;">${LANG==='ar'?'المهندس المسؤول:':'Assigned engineer:'}</strong>
+            <select onchange="setEngineer('${pivot}', this.value)" style="padding:7px 12px;border:1px solid #CED4DA;border-radius:7px;font-family:inherit;">
+                <option value="">${LANG==='ar'?'غير معين':'Unassigned'}</option>
+                ${Object.entries(ENGINEERS).map(([k,v]) => `<option value="${k}" ${k===assigned?'selected':''}>${v[LANG]||v.ar} — ${v.zone}</option>`).join('')}
+            </select>
+        </div>`;
+    
+    document.getElementById('modalBody').innerHTML = `
+        ${engineerAssignHtml}
+        <div class="info-grid">
+            <div class="info-item"><div class="ilabel">${LANG==='ar'?'المحصول السابق':'Previous crop'}</div><div class="ival">${rec.last_crop}</div></div>
+            <div class="info-item"><div class="ilabel">${LANG==='ar'?'الطاقة':'Power'}</div><div class="ival">${rec.power}</div></div>
+            <div class="info-item"><div class="ilabel">${LANG==='ar'?'المساحة':'Area'}</div><div class="ival">${rec.area} ${LANG==='ar'?'هـ':'ha'}</div></div>
+            <div class="info-item"><div class="ilabel">${LANG==='ar'?'إنتاج 2026':'2026 yield'}</div><div class="ival">${rec.prod26 ? rec.prod26.toFixed(2)+(LANG==='ar'?' ط/هـ':' t/ha') : '—'}</div></div>
+            <div class="info-item"><div class="ilabel">${LANG==='ar'?'الخطر':'Risk'}</div><div class="ival">${{critical:'🔴',high:'🟠',medium:'🟡',low:'✅'}[rec.risk]}</div></div>
+            <div class="info-item"><div class="ilabel">${LANG==='ar'?'الإنجاز':'Progress'}</div><div class="ival">${getProgress(pivot)}%</div></div>
+        </div>
+        ${rec.warning_issue ? `
+            <div class="warning-box">
+                <strong style="color:#C0392B;">⚠️ ${LANG==='ar'?'تحذير من 2026:':'2026 Warning:'}</strong>
+                <div style="margin-top:4px;">${rec.warning_issue}</div>
+                ${rec.warning_action ? `<div style="margin-top:5px;"><strong>${LANG==='ar'?'الإجراء:':'Action:'}</strong> ${rec.warning_action}</div>` : ''}
+            </div>` : ''}
+        <div class="planting-date-box">
+            <label>🌾 ${LANG==='ar'?'تاريخ الزراعة:':'Planting date:'}</label>
+            <input type="date" id="plantingDateInput" value="${t.plantingDate || ''}">
+            <button onclick="setPlantingDate()">${LANG==='ar'?'💾 حفظ وتوليد الجدول':'💾 Save & generate'}</button>
+            ${t.plantingDate ? `<span style="color:#1B4332;font-weight:700;">${L('age')}: ${daysBetween(t.plantingDate, new Date().toISOString().slice(0,10))} ${L('day')}</span>` : ''}
+        </div>
+        <div class="section-title">📋 ${LANG==='ar'?'جدول العمليات والتسميد':'Operations & fertilization'}</div>
+        <div id="opsTableContainer"></div>
+        <div class="section-title">📝 ${LANG==='ar'?'إضافة ملاحظة':'Add note'}</div>
+        <div class="add-note">
+            <textarea id="noteInput" placeholder="${LANG==='ar'?'ملاحظة ميدانية...':'Field note...'}"></textarea>
+            <button onclick="addNote()">${LANG==='ar'?'حفظ':'Save'}</button>
+        </div>
+        <div class="section-title">📷 ${LANG==='ar'?'صور / فيديوهات':'Photos / videos'}</div>
+        <div class="file-upload-row">
+            <label class="file-label">📷 ${LANG==='ar'?'صور':'Photos'} <input type="file" accept="image/*" multiple onchange="uploadImages(event)"></label>
+            <label class="file-label" style="background:#6B2737;">🎥 ${LANG==='ar'?'فيديو':'Video'} <input type="file" accept="video/*" onchange="uploadVideo(event)"></label>
+        </div>
+        <div id="notesList"></div>
+        <div id="mediaSection"></div>
+        <div id="whatsappSection"></div>
+    `;
+    renderOpsTable();
+    renderNotesList();
+    renderMedia();
+    renderWhatsApp();
+    document.getElementById('modal').classList.add('active');
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('active'); currentPivot = null; renderAll(); }
+function setEngineer(pivot, key) { ASSIGNMENTS[pivot] = key; saveAssignments(); renderEngineers(); }
+function setPlantingDate() {
+    const date = document.getElementById('plantingDateInput').value;
+    if (!date) { alert(L('enterDate')); return; }
+    const t = getPivotData(currentPivot);
+    t.plantingDate = date;
+    if (!t.operations.planting) t.operations.planting = {};
+    t.operations.planting.actualDate = date;
+    t.operations.planting.status = 'done';
+    t.updated = new Date().toISOString();
+    saveTracking();
+    openModal(currentPivot);
+}
+
+function renderOpsTable() {
+    const t = getPivotData(currentPivot);
+    const today = new Date().toISOString().slice(0,10);
+    if (!t.plantingDate) {
+        document.getElementById('opsTableContainer').innerHTML = `<div style="background:#FFF3CD;padding:12px;border-radius:8px;text-align:center;color:#856404;font-weight:600;">👆 ${LANG==='ar'?'أدخل تاريخ الزراعة ليتولد جدول التواريخ':'Enter planting date to auto-generate'}</div>`;
+        return;
+    }
+    const typeLabels = {prep:LANG==='ar'?'تجهيز':'Prep', fert:LANG==='ar'?'سماد':'Fert', pesticide:LANG==='ar'?'مبيد':'Pest', irrigation:LANG==='ar'?'ري':'Irr', planting:LANG==='ar'?'زراعة':'Plant', harvest:LANG==='ar'?'حصاد':'Harv', stage:LANG==='ar'?'مرحلة':'Stage'};
+    const html = `
+        <table class="ops-table">
+            <thead><tr>
+                <th>#</th><th>${LANG==='ar'?'النوع':'Type'}</th>
+                <th class="text">${LANG==='ar'?'العملية':'Operation'}</th>
+                <th>${LANG==='ar'?'المعدل':'Rate'}</th>
+                <th>${LANG==='ar'?'اليوم':'Day'}</th>
+                <th>${LANG==='ar'?'متوقع':'Expected'}</th>
+                <th>${LANG==='ar'?'فعلي':'Actual'}</th>
+                <th>${LANG==='ar'?'الحالة':'Status'}</th>
+            </tr></thead>
+            <tbody>
+                ${OPS.map((op, i) => {
+                    const od = t.operations[op.id] || {};
+                    const target = addDays(t.plantingDate, op.day);
+                    const actual = od.actualDate || '';
+                    const status = od.status || 'pending';
+                    const overdue = status !== 'done' && target < today;
+                    const rowCls = status === 'done' ? 'done' : (overdue ? 'overdue' : '');
+                    return `<tr class="${rowCls}">
+                            <td>${i+1}</td>
+                            <td><span class="op-type ${op.type}">${typeLabels[op.type]}</span></td>
+                            <td class="text">${op.icon} ${opName(op)}</td>
+                            <td style="font-size:0.75rem;">${op.rate || '—'}</td>
+                            <td style="font-size:0.75rem;">${op.day>0?'+'+op.day:op.day}</td>
+                            <td style="font-size:0.76rem;">${fmtDate(target)}</td>
+                            <td><input type="date" value="${actual}" onchange="setOpDate('${op.id}', this.value)"></td>
+                            <td><button class="op-status-btn ${status==='done'?'done':''}" onclick="toggleOpStatus('${op.id}')">${status==='done' ? L('doneDate') : L('notYet')}</button></td>
+                        </tr>`;
+                }).join('')}
+            </tbody>
+        </table>`;
+    document.getElementById('opsTableContainer').innerHTML = html;
+}
+
+function setOpDate(opId, date) {
+    const t = getPivotData(currentPivot);
+    if (!t.operations[opId]) t.operations[opId] = {};
+    t.operations[opId].actualDate = date;
+    if (date) t.operations[opId].status = 'done';
+    t.updated = new Date().toISOString();
+    saveTracking();
+    renderOpsTable();
+}
+function toggleOpStatus(opId) {
+    const t = getPivotData(currentPivot);
+    if (!t.operations[opId]) t.operations[opId] = {};
+    if (t.operations[opId].status === 'done') {
+        t.operations[opId].status = 'pending';
+        t.operations[opId].actualDate = '';
+    } else {
+        t.operations[opId].status = 'done';
+        if (!t.operations[opId].actualDate) t.operations[opId].actualDate = new Date().toISOString().slice(0,10);
+    }
+    t.updated = new Date().toISOString();
+    saveTracking();
+    renderOpsTable();
+}
+
+function addNote() {
+    const input = document.getElementById('noteInput');
+    const text = input.value.trim();
+    if (!text) return;
+    const t = getPivotData(currentPivot);
+    t.notes.push({ text, date: new Date().toISOString() });
+    t.updated = new Date().toISOString();
+    saveTracking();
+    input.value = '';
+    renderNotesList();
+}
+function deleteNote(idx) {
+    if (!confirm(L('deleteNote'))) return;
+    const t = getPivotData(currentPivot);
+    t.notes.splice(idx, 1);
+    t.updated = new Date().toISOString();
+    saveTracking();
+    renderNotesList();
+}
+function renderNotesList() {
+    const t = getPivotData(currentPivot);
+    const list = document.getElementById('notesList');
+    if (!list) return;
+    if (!t.notes.length) { list.innerHTML = `<div class="empty-state">${LANG==='ar'?'لا توجد ملاحظات':'No notes yet'}</div>`; return; }
+    list.innerHTML = `<div class="section-title" style="margin-top:12px;">📋 ${LANG==='ar'?'السجل':'Log'} (${t.notes.length})</div>` +
+        [...t.notes].reverse().map((n, ri) => {
+            const i = t.notes.length - 1 - ri;
+            const cls = n.fromEngineer ? 'from-engineer' : '';
+            const tag = n.fromEngineer ? `<span class="engineer-note-tag">📥 ${ENGINEERS[n.fromEngineer]?.[LANG] || n.fromEngineer}</span>` : '';
+            return `<div class="note-item ${cls}">
+                    <button class="del" onclick="deleteNote(${i})">🗑️</button>
+                    <div class="date">📅 ${fmtDateTime(n.date)}${tag}</div>
+                    <div style="white-space:pre-wrap;">${escapeHtml(n.text)}</div>
+                </div>`;
+        }).join('');
+}
+
+function uploadImages(e) {
+    const files = Array.from(e.target.files);
+    const t = getPivotData(currentPivot);
+    let processed = 0;
+    files.forEach(file => {
+        const r = new FileReader();
+        r.onload = ev => {
+            t.images.push({ data: ev.target.result, name: file.name, date: new Date().toISOString() });
+            processed++;
+            if (processed === files.length) { t.updated = new Date().toISOString(); saveTracking(); renderMedia(); }
+        };
+        r.readAsDataURL(file);
+    });
+    e.target.value = '';
+}
+function uploadVideo(e) {
+    const file = e.target.files[0]; if (!file) return;
+    if (file.size > 50*1024*1024 && !confirm(L('toolLarge'))) { e.target.value=''; return; }
+    const r = new FileReader();
+    r.onload = ev => {
+        const t = getPivotData(currentPivot);
+        t.videos.push({ data: ev.target.result, name: file.name, date: new Date().toISOString() });
+        t.updated = new Date().toISOString();
+        saveTracking(); renderMedia();
+    };
+    r.readAsDataURL(file);
+    e.target.value = '';
+}
+function deleteImage(i) { if (!confirm(L('delete'))) return; const t = getPivotData(currentPivot); t.images.splice(i,1); t.updated=new Date().toISOString(); saveTracking(); renderMedia(); }
+function deleteVideo(i) { if (!confirm(L('delete'))) return; const t = getPivotData(currentPivot); t.videos.splice(i,1); t.updated=new Date().toISOString(); saveTracking(); renderMedia(); }
+function renderMedia() {
+    const t = getPivotData(currentPivot);
+    const section = document.getElementById('mediaSection');
+    if (!section) return;
+    let html = '';
+    if (t.images.length) {
+        html += `<div class="section-title" style="margin-top:12px;">📷 ${LANG==='ar'?'الصور':'Photos'} (${t.images.length})</div>`;
+        html += `<div class="media-grid">${t.images.map((img, i) => `<div class="media-item"><button class="mdel" onclick="deleteImage(${i})">✕</button><img src="${img.data}" onclick="viewMedia('img','${img.data.replace(/'/g,"&#39;")}')"></div>`).join('')}</div>`;
+    }
+    if (t.videos.length) {
+        html += `<div class="section-title" style="margin-top:12px;">🎥 ${LANG==='ar'?'الفيديوهات':'Videos'} (${t.videos.length})</div>`;
+        html += `<div class="media-grid">${t.videos.map((v, i) => `<div class="media-item"><button class="mdel" onclick="deleteVideo(${i})">✕</button><video src="${v.data}" controls></video></div>`).join('')}</div>`;
+    }
+    section.innerHTML = html;
+}
+// ═══ WHATSAPP IMPORT ═══
+let currentWaFilter = 'all';
+
+// Regex to match WhatsApp message format with Arabic AM/PM and various separators
+const WA_REGEX = /^[\s\u200e\u200f]*\[?(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})[,،\s]+(\d{1,2}):(\d{2})(?::\d{2})?\s*([صمAPap][\.MmＡＰ]*)?\]?\s*[-\s]*([^:]+?):\s*([\s\S]*)/;
+
+// Pivot patterns - matches wheat 2027 plan pivots
+const ALL_PIVOT_NAMES = DATA.map(r => r.pivot);
+const PIVOT_REGEX = /\b(NP\d{1,2}|PH3[\s_]*[A-E]\d{1,2}|[A-P]\d{1,2}|CP\d{3})\b/gi;
+
+// Well patterns
+const WELL_REGEX = /\b(?:بئر|well|w|w\.|machine|ماكينة|مكينة)\s*[#\.n]*\s*(\d{1,3})\b/gi;
+
+// Categorization keywords
+const WA_CATEGORIES = {
+    fault: ['عطل','تعطل','خربان','مش شغال','لا يعمل','auto stop','autostop','auto-stop','مشكلة','عطلان','خراب','تهريب','تسريب','leak','broken','سلندر','مكسور','يحتاج صيانة'],
+    stop: ['توقف','متوقف','وقف','واقف','stop','stopped','ايقاف','انقطع','متعطل'],
+    water: ['مياه','ماء','ري','تدفق','ضعف','ضغط','rpm','water','pressure','flow'],
+    fert: ['سماد','تسميد','داب','يوريا','dap','urea','fertilizer','green sand','بوتاسيوم','potassium'],
+};
+
+function categorizeMessage(text) {
+    const t = text.toLowerCase();
+    for (const [cat, keywords] of Object.entries(WA_CATEGORIES)) {
+        if (keywords.some(k => t.includes(k.toLowerCase()))) return cat;
+    }
+    return 'general';
+}
+
+function extractPivots(text) {
+    const found = new Set();
+    const matches = text.matchAll(PIVOT_REGEX);
+    for (const m of matches) {
+        let pivot = m[1].toUpperCase().replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+        // Normalize PH3 pivots
+        if (pivot.startsWith('PH3')) {
+            pivot = pivot.replace(/PH3\s*([A-E])\s*(\d+)/, 'PH3 $1$2');
+            // Ensure proper format: "PH3 A01"
+            const m2 = pivot.match(/PH3\s+([A-E])(\d+)/);
+            if (m2) {
+                const letter = m2[1];
+                const num = m2[2].padStart(2, '0');
+                pivot = `PH3 ${letter}${num}`;
+            }
+        }
+        // Pad single digits for non-PH3
+        if (!pivot.startsWith('PH3') && !pivot.startsWith('CP')) {
+            const m3 = pivot.match(/^([A-P]|NP)(\d+)$/);
+            if (m3) {
+                const letter = m3[1];
+                const num = m3[2].padStart(2, '0');
+                pivot = letter + num;
+            }
+        }
+        if (ALL_PIVOT_NAMES.includes(pivot)) found.add(pivot);
+    }
+    return [...found];
+}
+
+function extractWell(text) {
+    const matches = text.matchAll(WELL_REGEX);
+    const wells = [];
+    for (const m of matches) wells.push(parseInt(m[1]));
+    return wells[0] || null;
+}
+
+function parseDate(d, m, y) {
+    y = parseInt(y);
+    if (y < 100) y += 2000;
+    return `${y}-${String(parseInt(m)).padStart(2,'0')}-${String(parseInt(d)).padStart(2,'0')}`;
+}
+
+function parseWhatsAppFile(content) {
+    const lines = content.split(/\r?\n/);
+    const messages = [];
+    let currentMsg = null;
+    
+    for (const line of lines) {
+        const match = line.match(WA_REGEX);
+        if (match) {
+            if (currentMsg) messages.push(currentMsg);
+            const [, d, m, y, h, min, ampm, sender, text] = match;
+            let hour = parseInt(h);
+            if (ampm) {
+                if ((ampm.includes('م') || ampm.toLowerCase().includes('p')) && hour < 12) hour += 12;
+                if ((ampm.includes('ص') || ampm.toLowerCase().includes('a')) && hour === 12) hour = 0;
+            }
+            currentMsg = {
+                date: parseDate(d, m, y),
+                time: `${String(hour).padStart(2,'0')}:${min}`,
+                sender: sender.trim(),
+                text: text.trim()
+            };
+        } else if (currentMsg && line.trim()) {
+            // Continuation of previous message
+            currentMsg.text += '\n' + line.trim();
+        }
+    }
+    if (currentMsg) messages.push(currentMsg);
+    
+    // Filter: skip system messages
+    return messages.filter(m => {
+        if (!m.text) return false;
+        if (m.text.includes('المُرفق') || m.text.includes('<Media omitted>')) return false;
+        if (m.text.includes('تغيّر رمز أمانك')) return false;
+        if (m.text.includes('مشفرة تمامًا')) return false;
+        if (m.text.includes('أنشأ هذه المجموعة') || m.text.includes('أضاف') || m.text.includes('أضافك')) return false;
+        if (m.text.includes('تم حذف هذه الرسالة') || m.text.includes('This message was deleted')) return false;
+        if (m.text.length < 3) return false;
+        return true;
+    });
+}
+
+async function importWhatsApp(e) {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    
+    const progressBox = document.getElementById('waProgress');
+    const progressText = document.getElementById('waProgressText');
+    const progressBar = document.getElementById('waProgressBar');
+    progressBox.classList.add('active');
+    
+    let totalMessages = 0;
+    let taggedMessages = 0;
+    let processedFiles = 0;
+    let fileCount = files.length;
+    
+    for (const file of files) {
+        processedFiles++;
+        progressText.textContent = `${LANG==='ar'?'ملف':'File'} ${processedFiles}/${fileCount}: ${file.name}`;
+        progressBar.style.width = (processedFiles / fileCount * 50) + '%';
+        
+        const content = await file.text();
+        const messages = parseWhatsAppFile(content);
+        totalMessages += messages.length;
+        
+        // Process each message
+        for (let i = 0; i < messages.length; i++) {
+            const msg = messages[i];
+            const pivots = extractPivots(msg.text);
+            const well = extractWell(msg.text);
+            const category = categorizeMessage(msg.text);
+            
+            if (pivots.length === 0) continue;
+            
+            for (const pivot of pivots) {
+                const t = getPivotData(pivot);
+                if (!t.whatsapp) t.whatsapp = [];
+                
+                // Dedupe by date+time+sender+first 50 chars
+                const key = `${msg.date}_${msg.time}_${msg.sender}_${msg.text.slice(0,50)}`;
+                if (t.whatsapp.some(x => `${x.date}_${x.time}_${x.sender}_${x.text.slice(0,50)}` === key)) continue;
+                
+                t.whatsapp.push({
+                    date: msg.date,
+                    time: msg.time,
+                    sender: msg.sender,
+                    text: msg.text,
+                    category: category,
+                    well: well,
+                    sourceFile: file.name
+                });
+                taggedMessages++;
+            }
+            
+            if (i % 50 === 0) {
+                progressBar.style.width = (50 + (processedFiles / fileCount) * 50 * (i/messages.length)) + '%';
+                await new Promise(r => setTimeout(r, 1));
+            }
+        }
+        
+        // Sort WhatsApp messages by date for each pivot
+        Object.keys(TRACKING).forEach(p => {
+            if (TRACKING[p].whatsapp) {
+                TRACKING[p].whatsapp.sort((a,b) => (a.date + a.time).localeCompare(b.date + b.time));
+            }
+        });
+    }
+    
+    saveTracking();
+    progressBar.style.width = '100%';
+    progressText.textContent = `✅ ${LANG==='ar'?'تم':'Done'}`;
+    setTimeout(() => progressBox.classList.remove('active'), 2000);
+    
+    alert(`✅ ${LANG==='ar'?'تمت المعالجة':'Processed'}\n` +
+          `${LANG==='ar'?'الرسائل الكلية':'Total messages'}: ${totalMessages}\n` +
+          `${LANG==='ar'?'الرسائل المرتبطة بمحاور':'Tagged to pivots'}: ${taggedMessages}`);
+    
+    renderAll();
+    e.target.value = '';
+}
+
+function setWaFilter(f) {
+    currentWaFilter = f;
+    renderWhatsApp();
+}
+
+function renderWhatsApp() {
+    const section = document.getElementById('whatsappSection');
+    if (!section || !currentPivot) return;
+    
+    const t = getPivotData(currentPivot);
+    const msgs = t.whatsapp || [];
+    
+    if (msgs.length === 0) {
+        section.innerHTML = '';
+        return;
+    }
+    
+    const filtered = currentWaFilter === 'all' ? msgs : msgs.filter(m => m.category === currentWaFilter);
+    const catCounts = { fault:0, stop:0, water:0, fert:0, general:0 };
+    msgs.forEach(m => catCounts[m.category]++);
+    
+    const catLabels = {
+        all: LANG==='ar' ? 'الكل' : 'All',
+        fault: LANG==='ar' ? '⚠️ أعطال' : '⚠️ Faults',
+        stop: LANG==='ar' ? '🛑 توقف' : '🛑 Stops',
+        water: LANG==='ar' ? '💧 ري/مياه' : '💧 Water',
+        fert: LANG==='ar' ? '🧪 تسميد' : '🧪 Fertilizer',
+        general: LANG==='ar' ? '💬 عام' : '💬 General',
+    };
+    
+    section.innerHTML = `
+        <div class="wa-section">
+            <h4>📱 ${LANG==='ar'?'سجل دردشة الواتساب':'WhatsApp chat log'} <span class="wa-badge">${msgs.length}</span></h4>
+            <div class="wa-filters">
+                <button class="wa-filter-btn ${currentWaFilter==='all'?'active':''}" onclick="setWaFilter('all')">${catLabels.all} (${msgs.length})</button>
+                ${catCounts.fault ? `<button class="wa-filter-btn ${currentWaFilter==='fault'?'active':''}" onclick="setWaFilter('fault')">${catLabels.fault} (${catCounts.fault})</button>` : ''}
+                ${catCounts.stop ? `<button class="wa-filter-btn ${currentWaFilter==='stop'?'active':''}" onclick="setWaFilter('stop')">${catLabels.stop} (${catCounts.stop})</button>` : ''}
+                ${catCounts.water ? `<button class="wa-filter-btn ${currentWaFilter==='water'?'active':''}" onclick="setWaFilter('water')">${catLabels.water} (${catCounts.water})</button>` : ''}
+                ${catCounts.fert ? `<button class="wa-filter-btn ${currentWaFilter==='fert'?'active':''}" onclick="setWaFilter('fert')">${catLabels.fert} (${catCounts.fert})</button>` : ''}
+                ${catCounts.general ? `<button class="wa-filter-btn ${currentWaFilter==='general'?'active':''}" onclick="setWaFilter('general')">${catLabels.general} (${catCounts.general})</button>` : ''}
+            </div>
+            <div style="max-height:400px;overflow-y:auto;">
+                ${filtered.length === 0 ? `<div class="wa-empty">${LANG==='ar'?'لا توجد رسائل في هذه الفئة':'No messages in this category'}</div>` : 
+                    filtered.map(m => `
+                        <div class="wa-msg ${m.category}">
+                            <div class="wa-meta">
+                                <span class="wa-sender">${escapeHtml(m.sender)}</span>
+                                <span>📅 ${m.date} ${m.time}</span>
+                                <span class="wa-tag ${m.category}">${catLabels[m.category].replace(/\(.*\)/g,'').trim()}</span>
+                                ${m.well ? `<span class="wa-tag general">${LANG==='ar'?'بئر':'Well'} ${m.well}</span>` : ''}
+                            </div>
+                            <div class="wa-text">${escapeHtml(m.text)}</div>
+                        </div>
+                    `).join('')
+                }
+            </div>
+        </div>`;
+}
+
+function viewMedia(type, src) {
+    document.getElementById('viewerContent').innerHTML = type==='img' ? `<img src="${src}">` : `<video src="${src}" controls autoplay></video>`;
+    document.getElementById('viewer').classList.add('active');
+}
+function closeViewer() { document.getElementById('viewer').classList.remove('active'); document.getElementById('viewerContent').innerHTML=''; }
+
+function exportData() {
+    const payload = {
+        type: EMBEDDED_ENGINEER ? 'engineer-export' : 'master-export',
+        engineer: EMBEDDED_ENGINEER || null,
+        exportedAt: new Date().toISOString(),
+        tracking: TRACKING,
+        assignments: !EMBEDDED_ENGINEER ? ASSIGNMENTS : null,
+        engineers: !EMBEDDED_ENGINEER ? ENGINEERS : null,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const suffix = EMBEDDED_ENGINEER ? `_${EMBEDDED_ENGINEER}` : '_master';
+    a.download = `wheat2027${suffix}_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+function importData(e) {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = ev => {
+        try {
+            const d = JSON.parse(ev.target.result);
+            if (confirm(L('importConfirm'))) {
+                if (d.tracking) TRACKING = d.tracking;
+                if (d.assignments) ASSIGNMENTS = d.assignments;
+                if (d.engineers) ENGINEERS = d.engineers;
+                else if (!d.tracking) TRACKING = d;
+                saveTracking(); saveAssignments(); saveEngineers(); renderAll();
+                alert(L('done3'));
+            }
+        } catch(err) { alert(L('invalidFile')); }
+    };
+    r.readAsText(f);
+    e.target.value = '';
+}
+
+function mergeEngineerFiles(e) {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    const logs = [];
+    let totalMerged = 0;
+    let processed = 0;
+    files.forEach(file => {
+        const r = new FileReader();
+        r.onload = ev => {
+            try {
+                const d = JSON.parse(ev.target.result);
+                const engineer = d.engineer || 'unknown';
+                const engineerName = ENGINEERS[engineer] ? (ENGINEERS[engineer][LANG]||ENGINEERS[engineer].ar) : engineer;
+                let merged = 0;
+                if (d.tracking) {
+                    Object.entries(d.tracking).forEach(([pivot, pdata]) => {
+                        const assigned = ASSIGNMENTS[pivot];
+                        if (assigned && assigned !== engineer) return;
+                        const existing = getPivotData(pivot);
+                        if (pdata.plantingDate && (!existing.plantingDate || new Date(pdata.updated||0) > new Date(existing.updated||0))) {
+                            existing.plantingDate = pdata.plantingDate;
+                        }
+                        if (pdata.operations) {
+                            Object.entries(pdata.operations).forEach(([opId, op]) => {
+                                if (!existing.operations[opId] || op.status === 'done') existing.operations[opId] = op;
+                            });
+                        }
+                        if (pdata.notes) {
+                            pdata.notes.forEach(n => {
+                                if (existing.notes.findIndex(e => e.text === n.text && e.date === n.date) === -1) {
+                                    existing.notes.push({ ...n, fromEngineer: engineer });
+                                }
+                            });
+                        }
+                        if (pdata.images) {
+                            pdata.images.forEach(img => {
+                                if (!existing.images.some(e => e.name === img.name && e.date === img.date)) existing.images.push(img);
+                            });
+                        }
+                        if (pdata.videos) {
+                            pdata.videos.forEach(v => {
+                                if (!existing.videos.some(e => e.name === v.name && e.date === v.date)) existing.videos.push(v);
+                            });
+                        }
+                        existing.updated = new Date().toISOString();
+                        merged++;
+                    });
+                }
+                logs.push(`<div style="padding:8px 12px;background:#F5FDF8;border-right:4px solid #27AE60;border-radius:6px;margin-bottom:6px;"><strong>✅ ${file.name}</strong><br>${LANG==='ar'?'من:':'From:'} ${engineerName} | ${LANG==='ar'?'محاور:':'Pivots:'} ${merged}</div>`);
+                totalMerged += merged;
+            } catch(err) {
+                logs.push(`<div style="padding:8px 12px;background:#FFF5F5;border-right:4px solid #C0392B;border-radius:6px;margin-bottom:6px;"><strong>❌ ${file.name}</strong><br>${err.message}</div>`);
+            }
+            processed++;
+            if (processed === files.length) {
+                saveTracking();
+                document.getElementById('mergeLog').innerHTML = `
+                    <h3 style="color:#1B4332;margin-bottom:12px;">${LANG==='ar'?'نتائج الدمج':'Merge Results'}</h3>
+                    <div style="background:#F0F8FF;padding:10px;border-radius:8px;margin-bottom:10px;font-weight:700;color:#2874A6;">
+                        📊 ${LANG==='ar'?'إجمالي المحاور:':'Total pivots:'} ${totalMerged} ${LANG==='ar'?'من':'from'} ${files.length} ${LANG==='ar'?'ملف':'files'}
+                    </div>${logs.join('')}`;
+                renderAll();
+            }
+        };
+        r.readAsText(file);
+    });
+    e.target.value = '';
+}
+
+function generateEngineerFile(engineerKey) {
+    const info = ENGINEERS[engineerKey];
+    if (!info) return;
+    const engineerPivots = DATA.filter(r => ASSIGNMENTS[r.pivot] === engineerKey);
+    if (!engineerPivots.length) { alert(LANG==='ar'?'لا توجد محاور معينة':'No pivots assigned'); return; }
+    
+    let newHtml = document.documentElement.outerHTML;
+    newHtml = newHtml.replace(/<title>[^<]*<\/title>/, `<title>Wheat 2027 — ${info.en} (${info.zone})</title>`);
+    newHtml = newHtml.replace("const EMBEDDED_ENGINEER = null;", `const EMBEDDED_ENGINEER = '${engineerKey}';`);
+    newHtml = newHtml.replace("const STORAGE_KEY = 'wheat2027_v4_master';", `const STORAGE_KEY = 'wheat2027_v4_${engineerKey}';`);
+    const filteredDataJson = JSON.stringify(engineerPivots);
+    newHtml = newHtml.replace(/const DATA = \[[\s\S]*?\];(\s*)const OPS/, `const DATA = ${filteredDataJson};$1const OPS`);
+    
+    // Modify header to show engineer mode
+    const injectScript = `
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.tab').forEach((t,i) => { if (i >= 1) t.style.display = 'none'; });
+    const mb = document.getElementById('modeBadge');
+    if (mb) { mb.textContent = '👨‍🔧 ${info.ar} — ${info.zone}'; mb.classList.add('engineer'); }
+    const at = document.getElementById('appTitle');
+    if (at) at.innerHTML = '🌾 ${LANG==='ar'?'نسخة':'Edition'} ${info.ar} — ${info.zone}';
+    const sub = document.getElementById('appSubtitle');
+    if (sub) sub.textContent = '${LANG==='ar'?'محاوركم فقط — متابعة ميدانية':'Your pivots only — field tracking'}';
+});
+<\/script>`;
+    newHtml = newHtml.replace('</body>', injectScript + '\n</body>');
+    
+    const blob = new Blob([newHtml], {type: 'text/html;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `wheat2027_${engineerKey}_${info.zone}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+    alert(`${LANG==='ar'?'✅ تم إنشاء ملف':'✅ Generated for'} ${info[LANG]||info.ar}\n${engineerPivots.length} ${LANG==='ar'?'محور':'pivots'}`);
+}
+
+function switchTab(idx) {
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+    document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i===idx));
+    if (idx === 1) renderEngineers();
+}
+
+function renderAll() { renderKPIs(); renderTable(); }
+
+try { LANG = localStorage.getItem(LANG_KEY) || 'ar'; } catch(e) {}
+loadTracking();
+applyLang();
+</script>
+</body>
+</html>
