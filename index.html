@@ -210,6 +210,30 @@ body[dir="ltr"] .help-box{border-right:none;border-left:4px solid #2874A6}
     th,td{padding:5px 3px;font-size:0.68rem}
     .modal-body{padding:12px}
 }
+.analysis-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-bottom:14px}
+.analysis-card{background:white;padding:16px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+.analysis-card h3{color:#1B4332;font-size:1.05rem;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #2D6A4F}
+.bar-chart{display:flex;flex-direction:column;gap:7px}
+.bar-row{display:grid;grid-template-columns:120px 1fr auto;gap:8px;align-items:center;font-size:0.82rem}
+.bar-row .bar-label{color:#555;font-weight:600}
+.bar-row .bar-track{height:20px;background:#E8EDE9;border-radius:10px;overflow:hidden}
+.bar-row .bar-fill{height:100%;display:flex;align-items:center;padding:0 8px;color:white;font-weight:700;font-size:0.75rem}
+.alert-list{display:grid;gap:6px}
+.alert-item{padding:9px 12px;border-radius:7px;font-size:0.82rem;background:#F8FAF9;border-right:4px solid #D4A017;cursor:pointer;transition:background 0.15s}
+body[dir="ltr"] .alert-item{border-right:none;border-left:4px solid #D4A017}
+.alert-item:hover{background:#FFFEF5}
+.alert-item.critical{border-right-color:#C0392B;background:#FFF5F5}
+body[dir="ltr"] .alert-item.critical{border-left-color:#C0392B}
+.alert-item .alert-title{font-weight:700;color:#1B4332;margin-bottom:3px}
+.alert-item .alert-meta{font-size:0.72rem;color:#777}
+.stat-box{display:grid;grid-template-columns:1fr auto;align-items:center;padding:9px 12px;background:#F8FAF9;border-radius:7px;margin-bottom:5px;font-size:0.85rem}
+.stat-box .stat-value{font-weight:700;color:#1B4332}
+.excel-badge{background:#217346;color:white;padding:4px 10px;border-radius:12px;font-size:0.72rem;font-weight:700}
+.tech-specs-box{background:linear-gradient(135deg,#F0F8FF 0%,#D6EAF8 100%);border:2px solid #2874A6;padding:12px;border-radius:10px;margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.tech-item{display:flex;align-items:center;gap:6px}
+.tech-item label{font-weight:700;color:#1B4332;font-size:0.85rem}
+.tech-item input{padding:7px 10px;border:1px solid #2874A6;border-radius:6px;font-family:inherit;font-size:0.88rem;background:white;width:110px}
+.tech-item input[type="date"]{width:140px}
 </style>
 </head>
 <body dir="rtl" id="bodyRoot">
@@ -223,14 +247,12 @@ body[dir="ltr"] .help-box{border-right:none;border-left:4px solid #2874A6}
         <span class="mode-badge" id="modeBadge">🏢 نسخة رئيسية</span>
         <button class="lang-toggle" onclick="toggleLang()" id="langBtn">🌐 EN</button>
         <button class="btn btn-primary" onclick="exportData()" data-ar="💾 نسخة احتياطية" data-en="💾 Backup">💾 نسخة احتياطية</button>
-        <label class="btn" style="cursor:pointer;" data-ar="📂 استيراد" data-en="📂 Import">
-            📂 استيراد
-            <input type="file" accept="application/json" onchange="importData(event)" style="display:none;">
-        </label>
-        <label class="btn" style="cursor:pointer;background:#25D366;" data-ar="📱 واتساب" data-en="📱 WhatsApp">
-            📱 واتساب
-            <input type="file" accept=".txt" multiple onchange="importWhatsApp(event)" style="display:none;">
-        </label>
+        <button class="btn" style="background:#2874A6;" onclick="exportExcel()" data-ar="📊 Excel" data-en="📊 Excel">📊 Excel</button>
+        <button class="btn" style="background:#8E44AD;" onclick="switchTab(3)" data-ar="📈 تحليل الوضع" data-en="📈 Analysis">📈 تحليل الوضع</button>
+        <button class="btn" onclick="document.getElementById('importJsonInput').click()" data-ar="📂 استيراد" data-en="📂 Import">📂 استيراد</button>
+        <input type="file" id="importJsonInput" accept="application/json,.json" onchange="importData(event)" style="position:absolute;left:-9999px;">
+        <button class="btn" style="background:#25D366;" onclick="document.getElementById('importWaInput').click()" data-ar="📱 واتساب" data-en="📱 WhatsApp">📱 واتساب</button>
+        <input type="file" id="importWaInput" accept=".txt,text/plain" multiple onchange="importWhatsApp(event)" style="position:absolute;left:-9999px;">
     </div>
 </div>
 
@@ -245,6 +267,7 @@ body[dir="ltr"] .help-box{border-right:none;border-left:4px solid #2874A6}
     <div class="tab active" onclick="switchTab(0)" data-ar="📊 جميع المحاور" data-en="📊 All Pivots">📊 جميع المحاور</div>
     <div class="tab" onclick="switchTab(1)" data-ar="👥 توزيع المهندسين" data-en="👥 Engineers">👥 توزيع المهندسين</div>
     <div class="tab" onclick="switchTab(2)" data-ar="📥 جمع البيانات" data-en="📥 Collect Data">📥 جمع البيانات</div>
+    <div class="tab" onclick="switchTab(3)" data-ar="📈 تحليل الوضع" data-en="📈 Analysis">📈 تحليل الوضع</div>
 </div>
 
 <!-- Panel 0: All Pivots -->
@@ -280,6 +303,8 @@ body[dir="ltr"] .help-box{border-right:none;border-left:4px solid #2874A6}
             <th data-ar="الخطر" data-en="Risk">الخطر</th>
             <th data-ar="تاريخ الزراعة" data-en="Planting">تاريخ الزراعة</th>
             <th data-ar="العمر" data-en="Age">العمر</th>
+            <th>⚙️ RPM</th>
+            <th data-ar="💧 التصرف" data-en="💧 Flow">💧 التصرف</th>
             <th data-ar="الحالة" data-en="Status">الحالة</th>
             <th data-ar="التقدم" data-en="Progress">التقدم</th>
         </tr></thead>
@@ -312,6 +337,11 @@ body[dir="ltr"] .help-box{border-right:none;border-left:4px solid #2874A6}
         </label>
     </div>
     <div id="mergeLog" style="background:white;padding:14px;border-radius:10px;margin-top:14px;"></div>
+</div>
+
+<!-- Panel 3: Analysis Dashboard -->
+<div class="panel" id="panel3">
+    <div id="analysisPanel"></div>
 </div>
 
 <!-- Modal -->
@@ -518,6 +548,8 @@ function renderTable() {
                 <td><span class="risk-tag ${r.risk}">${{critical:'🔴',high:'🟠',medium:'🟡',low:'✅'}[r.risk]}</span></td>
                 <td>${plantingDate ? fmtDate(plantingDate) : '—'}</td>
                 <td>${age!==null ? age+(LANG==='ar'?'ي':'d') : '—'}</td>
+                <td style="font-weight:${t?.rpm?'700':'normal'};color:${t?.rpm ? (t.rpm<1500?'#C0392B':t.rpm<1700?'#D4A017':'#27AE60') : '#999'};">${t?.rpm || '—'}</td>
+                <td style="font-weight:${t?.wellFlow?'700':'normal'};color:${t?.wellFlow ? '#2874A6' : '#999'};">${t?.wellFlow || '—'}</td>
                 <td>${statusLabels[pStatus]}</td>
                 <td><div class="progress-bar ${progress<30?'low':''}"><div class="fill" style="width:${progress}%"></div></div><div style="font-size:0.68rem;margin-top:2px;">${progress}%</div></td>
             </tr>`;
@@ -680,6 +712,8 @@ function openModal(pivot) {
             <div class="info-item"><div class="ilabel">${LANG==='ar'?'الطاقة':'Power'}</div><div class="ival">${rec.power}</div></div>
             <div class="info-item"><div class="ilabel">${LANG==='ar'?'المساحة':'Area'}</div><div class="ival">${rec.area} ${LANG==='ar'?'هـ':'ha'}</div></div>
             <div class="info-item"><div class="ilabel">${LANG==='ar'?'إنتاج 2026':'2026 yield'}</div><div class="ival">${rec.prod26 ? rec.prod26.toFixed(2)+(LANG==='ar'?' ط/هـ':' t/ha') : '—'}</div></div>
+            <div class="info-item"><div class="ilabel">⚙️ RPM</div><div class="ival">${t.rpm || '—'}</div></div>
+            <div class="info-item"><div class="ilabel">💧 ${LANG==='ar'?'التصرف':'Flow'}</div><div class="ival">${t.wellFlow ? t.wellFlow + (LANG==='ar'?' م³/س':' m³/h') : '—'}</div></div>
             <div class="info-item"><div class="ilabel">${LANG==='ar'?'الخطر':'Risk'}</div><div class="ival">${{critical:'🔴',high:'🟠',medium:'🟡',low:'✅'}[rec.risk]}</div></div>
             <div class="info-item"><div class="ilabel">${LANG==='ar'?'الإنجاز':'Progress'}</div><div class="ival">${getProgress(pivot)}%</div></div>
         </div>
@@ -694,6 +728,32 @@ function openModal(pivot) {
             <input type="date" id="plantingDateInput" value="${t.plantingDate || ''}">
             <button onclick="setPlantingDate()">${LANG==='ar'?'💾 حفظ وتوليد الجدول':'💾 Save & generate'}</button>
             ${t.plantingDate ? `<span style="color:#1B4332;font-weight:700;">${L('age')}: ${daysBetween(t.plantingDate, new Date().toISOString().slice(0,10))} ${L('day')}</span>` : ''}
+        </div>
+        
+        <div class="tech-specs-box">
+            <div class="tech-item">
+                <label>⚙️ ${LANG==='ar'?'سرعة الماكينة (RPM):':'Machine RPM:'}</label>
+                <input type="number" id="rpmInput" value="${t.rpm || ''}" placeholder="${LANG==='ar'?'مثال: 1800':'e.g. 1800'}" min="0" max="3000">
+                <span style="font-size:0.75rem;color:#777;">RPM</span>
+            </div>
+            <div class="tech-item">
+                <label>💧 ${LANG==='ar'?'تصرف البئر (م³/ساعة):':'Well flow (m³/h):'}</label>
+                <input type="number" id="flowInput" value="${t.wellFlow || ''}" placeholder="${LANG==='ar'?'مثال: 150':'e.g. 150'}" min="0" step="0.1">
+                <span style="font-size:0.75rem;color:#777;">${LANG==='ar'?'م³/س':'m³/h'}</span>
+            </div>
+            <div class="tech-item">
+                <label>📅 ${LANG==='ar'?'تاريخ القياس:':'Measured on:'}</label>
+                <input type="date" id="measureDateInput" value="${t.measureDate || ''}">
+            </div>
+            <button onclick="saveTechSpecs()" style="background:#2874A6;color:white;border:none;padding:9px 16px;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:700;">
+                💾 ${LANG==='ar'?'حفظ':'Save'}
+            </button>
+            ${t.rpm || t.wellFlow ? `<div style="width:100%;margin-top:6px;font-size:0.8rem;color:#1B4332;">
+                ${t.rpm ? `<strong>⚙️ ${t.rpm} RPM</strong>` : ''}
+                ${t.rpm && t.wellFlow ? ' | ' : ''}
+                ${t.wellFlow ? `<strong>💧 ${t.wellFlow} ${LANG==='ar'?'م³/س':'m³/h'}</strong>` : ''}
+                ${t.measureDate ? ` | ${LANG==='ar'?'بتاريخ':'on'} ${fmtDate(t.measureDate)}` : ''}
+            </div>` : ''}
         </div>
         <div class="section-title">📋 ${LANG==='ar'?'جدول العمليات والتسميد':'Operations & fertilization'}</div>
         <div id="opsTableContainer"></div>
@@ -728,6 +788,19 @@ function setPlantingDate() {
     if (!t.operations.planting) t.operations.planting = {};
     t.operations.planting.actualDate = date;
     t.operations.planting.status = 'done';
+    t.updated = new Date().toISOString();
+    saveTracking();
+    openModal(currentPivot);
+}
+
+function saveTechSpecs() {
+    const rpm = document.getElementById('rpmInput').value;
+    const flow = document.getElementById('flowInput').value;
+    const measureDate = document.getElementById('measureDateInput').value;
+    const t = getPivotData(currentPivot);
+    t.rpm = rpm ? parseInt(rpm) : null;
+    t.wellFlow = flow ? parseFloat(flow) : null;
+    t.measureDate = measureDate || null;
     t.updated = new Date().toISOString();
     saveTracking();
     openModal(currentPivot);
@@ -1284,10 +1357,234 @@ window.addEventListener('DOMContentLoaded', function() {
     alert(`${LANG==='ar'?'✅ تم إنشاء ملف':'✅ Generated for'} ${info[LANG]||info.ar}\n${engineerPivots.length} ${LANG==='ar'?'محور':'pivots'}`);
 }
 
+// ═══ EXCEL / CSV EXPORT ═══
+function exportExcel() {
+    const BOM = '﻿'; // UTF-8 BOM for Excel to read Arabic
+    const headers = [
+        LANG==='ar'?'المحور':'Pivot',
+        LANG==='ar'?'المرحلة':'Phase',
+        LANG==='ar'?'البئر':'Well',
+        LANG==='ar'?'المساحة (هـ)':'Area (ha)',
+        LANG==='ar'?'المحصول السابق':'Previous crop',
+        LANG==='ar'?'الطاقة':'Power',
+        LANG==='ar'?'المهندس':'Engineer',
+        LANG==='ar'?'الخطر':'Risk',
+        LANG==='ar'?'تاريخ الزراعة':'Planting date',
+        LANG==='ar'?'العمر (يوم)':'Age (days)',
+        LANG==='ar'?'الحالة':'Status',
+        LANG==='ar'?'التقدم %':'Progress %',
+        LANG==='ar'?'سرعة الماكينة (RPM)':'Machine RPM',
+        LANG==='ar'?'تصرف البئر (م³/س)':'Well flow (m³/h)',
+        LANG==='ar'?'تاريخ القياس':'Measure date',
+        LANG==='ar'?'إنتاج 2026':'2026 yield',
+        LANG==='ar'?'تحذير 2026':'2026 warning',
+        LANG==='ar'?'عدد الملاحظات':'Notes count',
+        LANG==='ar'?'عدد الصور':'Images count',
+        LANG==='ar'?'آخر تحديث':'Last updated',
+    ];
+    
+    const rows = DATA.map(r => {
+        const t = TRACKING[r.pivot] || {};
+        const assigned = ASSIGNMENTS[r.pivot];
+        const plantingDate = t.plantingDate || '';
+        const age = plantingDate ? daysBetween(plantingDate, new Date().toISOString().slice(0,10)) : '';
+        const status = getPivotStatus(r.pivot);
+        const progress = getProgress(r.pivot);
+        const engineerName = assigned && ENGINEERS[assigned] ? (ENGINEERS[assigned][LANG]||ENGINEERS[assigned].ar) : '';
+        const statusLabels = {'not-started':L('notStarted'),'prep':L('prep'),'planted':L('planted'),'harvested':L('harvested')};
+        const riskLabels = {critical:'🔴', high:'🟠', medium:'🟡', low:'✅'};
+        
+        return [
+            r.pivot, r.phase, r.well, r.area, r.last_crop||'', r.power||'',
+            engineerName, riskLabels[r.risk]||'',
+            plantingDate, age, statusLabels[status], progress,
+            t.rpm || '', t.wellFlow || '', t.measureDate || '',
+            r.prod26 ? r.prod26.toFixed(2) : '',
+            r.warning_issue || '',
+            (t.notes||[]).length, (t.images||[]).length,
+            t.updated ? new Date(t.updated).toLocaleDateString() : ''
+        ].map(v => {
+            // Escape CSV values with commas or quotes
+            const s = String(v);
+            if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+                return '"' + s.replace(/"/g, '""') + '"';
+            }
+            return s;
+        }).join(',');
+    });
+    
+    const csv = BOM + headers.join(',') + '\n' + rows.join('\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `wheat2027_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    alert(LANG==='ar'?'✅ تم تصدير ملف Excel\nيُفتح بـ Microsoft Excel أو Google Sheets':'✅ Excel file exported\nOpens in Microsoft Excel or Google Sheets');
+}
+
+// ═══ ANALYSIS DASHBOARD ═══
+function renderAnalysis() {
+    const panel = document.getElementById('analysisPanel');
+    if (!panel) return;
+    
+    const total = DATA.length;
+    const today = new Date().toISOString().slice(0,10);
+    
+    // Status counts
+    const statusCounts = {'not-started':0, 'prep':0, 'planted':0, 'harvested':0};
+    const riskCounts = {critical:0, high:0, medium:0, low:0};
+    const engineerStats = {};
+    let totalPlanted = 0, totalArea = 0, plantedArea = 0;
+    const overdueOps = [];
+    const upcomingOps = [];
+    const unassigned = [];
+    
+    DATA.forEach(r => {
+        const t = TRACKING[r.pivot];
+        statusCounts[getPivotStatus(r.pivot)]++;
+        riskCounts[r.risk]++;
+        totalArea += r.area || 0;
+        
+        const eng = ASSIGNMENTS[r.pivot];
+        if (!eng) unassigned.push(r);
+        else {
+            if (!engineerStats[eng]) engineerStats[eng] = {count:0, area:0, planted:0, progress:0};
+            engineerStats[eng].count++;
+            engineerStats[eng].area += r.area || 0;
+            if (t?.plantingDate) {
+                engineerStats[eng].planted++;
+                engineerStats[eng].progress += getProgress(r.pivot);
+            }
+        }
+        
+        if (t?.plantingDate) {
+            totalPlanted++;
+            plantedArea += r.area || 0;
+            // Check for overdue/upcoming operations
+            OPS.forEach(op => {
+                const od = t.operations?.[op.id];
+                if (od?.status === 'done') return;
+                const target = addDays(t.plantingDate, op.day);
+                const du = daysBetween(today, target);
+                if (du === null) return;
+                if (du < 0 && du >= -14) overdueOps.push({pivot:r.pivot, op, days:Math.abs(du)});
+                else if (du >= 0 && du <= 7) upcomingOps.push({pivot:r.pivot, op, days:du});
+            });
+        }
+    });
+    
+    overdueOps.sort((a,b) => b.days - a.days);
+    upcomingOps.sort((a,b) => a.days - b.days);
+    
+    const statusColors = {'not-started':'#CED4DA', 'prep':'#D4A017', 'planted':'#27AE60', 'harvested':'#2874A6'};
+    const riskColors = {critical:'#C0392B', high:'#E67E22', medium:'#D4A017', low:'#27AE60'};
+    
+    const statusLabels = {
+        'not-started': LANG==='ar'?'لم يبدأ':'Not started',
+        'prep': LANG==='ar'?'تجهيز':'Prep',
+        'planted': LANG==='ar'?'مزروع':'Planted',
+        'harvested': LANG==='ar'?'محصود':'Harvested'
+    };
+    
+    const bar = (label, value, max, color) => {
+        const pct = max > 0 ? (value / max) * 100 : 0;
+        return `<div class="bar-row">
+            <span class="bar-label">${label}</span>
+            <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color};">${value > 0 ? value : ''}</div></div>
+            <span style="color:#777;font-size:0.75rem;">${total > 0 ? Math.round(value/total*100) : 0}%</span>
+        </div>`;
+    };
+    
+    panel.innerHTML = `
+        <div class="analysis-grid">
+            <div class="analysis-card">
+                <h3>📊 ${LANG==='ar'?'توزيع الحالات':'Status Distribution'}</h3>
+                <div class="bar-chart">
+                    ${Object.entries(statusCounts).map(([k,v]) => bar(statusLabels[k], v, total, statusColors[k])).join('')}
+                </div>
+            </div>
+            
+            <div class="analysis-card">
+                <h3>⚠️ ${LANG==='ar'?'توزيع المخاطر':'Risk Distribution'}</h3>
+                <div class="bar-chart">
+                    ${bar('🔴 '+(LANG==='ar'?'حرج':'Critical'), riskCounts.critical, total, riskColors.critical)}
+                    ${bar('🟠 '+(LANG==='ar'?'عالي':'High'), riskCounts.high, total, riskColors.high)}
+                    ${bar('🟡 '+(LANG==='ar'?'متوسط':'Medium'), riskCounts.medium, total, riskColors.medium)}
+                    ${bar('✅ '+(LANG==='ar'?'منخفض':'Low'), riskCounts.low, total, riskColors.low)}
+                </div>
+            </div>
+            
+            <div class="analysis-card">
+                <h3>📏 ${LANG==='ar'?'إحصاءات المساحة':'Area Statistics'}</h3>
+                <div class="stat-box"><span>${LANG==='ar'?'إجمالي المساحة':'Total area'}</span><span class="stat-value">${totalArea.toLocaleString()} ${LANG==='ar'?'هـ':'ha'}</span></div>
+                <div class="stat-box"><span>${LANG==='ar'?'المساحة المزروعة':'Planted area'}</span><span class="stat-value">${plantedArea.toLocaleString()} ${LANG==='ar'?'هـ':'ha'}</span></div>
+                <div class="stat-box"><span>${LANG==='ar'?'نسبة التنفيذ':'Execution %'}</span><span class="stat-value">${totalArea > 0 ? Math.round(plantedArea/totalArea*100) : 0}%</span></div>
+                <div class="stat-box"><span>${LANG==='ar'?'محاور بدون تعيين':'Unassigned pivots'}</span><span class="stat-value" style="color:${unassigned.length > 0 ? '#C0392B':'#27AE60'};">${unassigned.length}</span></div>
+            </div>
+            
+            <div class="analysis-card">
+                <h3>👥 ${LANG==='ar'?'أداء المهندسين':'Engineer Performance'}</h3>
+                ${Object.keys(engineerStats).length === 0 ? `<div class="empty-state">${LANG==='ar'?'لا يوجد مهندسون معينون':'No engineers assigned'}</div>` : 
+                Object.entries(engineerStats).map(([key, stats]) => {
+                    const info = ENGINEERS[key];
+                    if (!info) return '';
+                    const avgProgress = stats.count > 0 ? Math.round(stats.progress / stats.count) : 0;
+                    return `<div class="stat-box" onclick="document.getElementById('engineerFilter').value='${key}';switchTab(0);" style="cursor:pointer;">
+                        <span><strong>${info[LANG]||info.ar}</strong><br><span style="font-size:0.72rem;color:#777;">${stats.count} ${LANG==='ar'?'محور':'pivots'} | ${stats.area} ${LANG==='ar'?'هـ':'ha'}</span></span>
+                        <span class="stat-value" style="color:${avgProgress>50?'#27AE60':avgProgress>25?'#D4A017':'#C0392B'};">${avgProgress}%</span>
+                    </div>`;
+                }).join('')}
+            </div>
+            
+            <div class="analysis-card" style="grid-column:span 2;">
+                <h3>🚨 ${LANG==='ar'?'العمليات المتأخرة':'Overdue Operations'} (${overdueOps.length})</h3>
+                <div class="alert-list" style="max-height:300px;overflow-y:auto;">
+                    ${overdueOps.length === 0 ? `<div class="empty-state">${LANG==='ar'?'لا توجد عمليات متأخرة':'No overdue operations'}</div>` :
+                    overdueOps.slice(0, 20).map(o => `
+                        <div class="alert-item critical" onclick="openModal('${o.pivot}')">
+                            <div class="alert-title">${o.op.icon} ${o.pivot} — ${opName(o.op)}</div>
+                            <div class="alert-meta">${LANG==='ar'?'متأخرة':'Overdue by'} ${o.days} ${LANG==='ar'?'يوم':'days'}</div>
+                        </div>`).join('')}
+                    ${overdueOps.length > 20 ? `<div style="text-align:center;color:#777;font-size:0.75rem;padding:6px;">${LANG==='ar'?'عرض أول 20 من':'Showing 20 of'} ${overdueOps.length}</div>` : ''}
+                </div>
+            </div>
+            
+            <div class="analysis-card" style="grid-column:span 2;">
+                <h3>⏰ ${LANG==='ar'?'العمليات القادمة (7 أيام)':'Upcoming Operations (7 days)'} (${upcomingOps.length})</h3>
+                <div class="alert-list" style="max-height:300px;overflow-y:auto;">
+                    ${upcomingOps.length === 0 ? `<div class="empty-state">${LANG==='ar'?'لا توجد عمليات قادمة':'No upcoming operations'}</div>` :
+                    upcomingOps.slice(0, 20).map(o => `
+                        <div class="alert-item" onclick="openModal('${o.pivot}')">
+                            <div class="alert-title">${o.op.icon} ${o.pivot} — ${opName(o.op)}</div>
+                            <div class="alert-meta">${o.days === 0 ? (LANG==='ar'?'اليوم':'Today') : (LANG==='ar'?'بعد':'in') + ' ' + o.days + ' ' + (LANG==='ar'?'يوم':'days')}</div>
+                        </div>`).join('')}
+                </div>
+            </div>
+        </div>
+        
+        <div class="analysis-card" style="margin-top:14px;">
+            <h3>📥 ${LANG==='ar'?'تصدير سريع':'Quick Export'}</h3>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="btn btn-primary" onclick="exportExcel()" style="background:#217346;">
+                    📊 ${LANG==='ar'?'تصدير Excel/CSV':'Export Excel/CSV'}
+                </button>
+                <button class="btn btn-primary" onclick="exportData()">
+                    💾 ${LANG==='ar'?'نسخة احتياطية JSON':'JSON Backup'}
+                </button>
+            </div>
+        </div>
+    `;
+}
+
 function switchTab(idx) {
     document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===idx));
     document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i===idx));
     if (idx === 1) renderEngineers();
+    if (idx === 3) renderAnalysis();
 }
 
 function renderAll() { renderKPIs(); renderTable(); }
