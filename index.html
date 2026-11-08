@@ -295,9 +295,69 @@ body[dir="ltr"] .map-info-box{border-right:none;border-left:4px solid #2874A6}
 .irrig-fert-tag{display:inline-block;background:#D4A017;color:white;padding:1px 5px;border-radius:9px;font-size:0.62rem;font-weight:700;margin:1px;white-space:nowrap}
 .irrig-fert-tag.pest{background:#C0392B}
 .fert-link-cell{font-size:0.7rem;color:#2874A6;font-weight:600;line-height:1.3}
+/* Login overlay */
+.login-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#1B4332 0%,#2D6A4F 50%,#52B788 100%);z-index:5000;display:flex;justify-content:center;align-items:center;padding:20px}
+.login-box{background:white;border-radius:16px;padding:30px 25px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center}
+.login-box h2{color:#1B4332;font-size:1.5rem;margin-bottom:5px}
+.login-box .sub{color:#555;font-size:0.9rem;margin-bottom:20px}
+.login-box .wheat-icon{font-size:3rem;margin-bottom:8px}
+.login-box label{display:block;text-align:start;font-weight:700;color:#1B4332;font-size:0.88rem;margin-bottom:5px;margin-top:12px}
+.login-box select,.login-box input{width:100%;padding:11px 12px;border:2px solid #CED4DA;border-radius:8px;font-family:inherit;font-size:1rem;background:white;box-sizing:border-box}
+.login-box select:focus,.login-box input:focus{outline:none;border-color:#2D6A4F}
+.login-box .login-btn{width:100%;background:linear-gradient(135deg,#2D6A4F 0%,#1B4332 100%);color:white;border:none;padding:13px;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:700;font-size:1rem;margin-top:16px;box-shadow:0 4px 10px rgba(27,67,50,0.25)}
+.login-box .login-btn:hover{box-shadow:0 6px 14px rgba(27,67,50,0.35)}
+.login-box .login-err{color:#C0392B;background:#FEE;padding:8px;border-radius:6px;font-size:0.82rem;margin-top:10px;display:none}
+.login-box .login-err.show{display:block}
+.login-box .login-footer{margin-top:14px;font-size:0.78rem;color:#777}
+/* User chip in header */
+.user-chip{background:white;color:#1B4332;padding:5px 10px;border-radius:15px;font-size:0.82rem;font-weight:700;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.3)}
+.user-chip .role-dot{width:8px;height:8px;border-radius:50%;background:#52B788}
+.user-chip .role-dot.admin{background:#D4A017}
+.logout-btn{background:#C0392B;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:0.78rem;font-weight:600}
+/* Admin section */
+.admin-section{background:linear-gradient(135deg,#FFF9E8 0%,#FFF3C4 100%);border:2px solid #D4A017;padding:14px;border-radius:10px;margin-bottom:14px}
+.admin-section h3{color:#7A5A00;font-size:1.05rem;margin-bottom:10px}
+.admin-row{display:flex;align-items:center;gap:10px;background:white;padding:8px 10px;border-radius:7px;margin-bottom:5px;flex-wrap:wrap}
+.admin-row .name{font-weight:700;color:#1B4332;flex:1;min-width:120px}
+.admin-row input{padding:6px 9px;border:1px solid #D4A017;border-radius:5px;font-family:inherit;font-size:0.85rem;width:90px}
+.admin-row button{background:#D4A017;color:white;border:none;padding:6px 12px;border-radius:5px;cursor:pointer;font-family:inherit;font-size:0.78rem;font-weight:600}
+/* Audit log */
+.audit-box{background:white;padding:12px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+.audit-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;padding:8px;background:#F8FAF9;border-radius:7px;align-items:center}
+.audit-filters select,.audit-filters input{padding:6px 10px;border:1px solid #CED4DA;border-radius:5px;font-family:inherit;font-size:0.85rem}
+.audit-table{width:100%;border-collapse:collapse;font-size:0.8rem}
+.audit-table th{background:#1B4332;color:white;padding:7px 5px;font-size:0.75rem;font-weight:600;text-align:start}
+.audit-table td{padding:6px 5px;border-bottom:1px solid #E8EDE9;vertical-align:middle;font-size:0.77rem}
+.audit-table tr:hover td{background:#F8FAF9}
+.action-tag{display:inline-block;padding:2px 7px;border-radius:9px;font-size:0.68rem;font-weight:700;color:white}
+.action-tag.add{background:#27AE60}.action-tag.edit{background:#2874A6}.action-tag.delete{background:#C0392B}
+.action-tag.login{background:#D4A017}.action-tag.view{background:#8E44AD}
+.signature{font-size:0.65rem;color:#777;font-style:italic}
+/* Fix RTL date input display */
+input[type="date"]{direction:ltr;text-align:center;unicode-bidi:plaintext}
+body[dir="rtl"] input[type="date"]::-webkit-datetime-edit{direction:ltr;text-align:center}
 </style>
 </head>
 <body dir="rtl" id="bodyRoot">
+
+<!-- Login Overlay -->
+<div class="login-overlay" id="loginOverlay">
+    <div class="login-box">
+        <div class="wheat-icon">🌾</div>
+        <h2 data-ar="نظام متابعة قمح 2027" data-en="Wheat 2027 System">نظام متابعة قمح 2027</h2>
+        <div class="sub" data-ar="يرجى تسجيل الدخول للمتابعة" data-en="Please log in to continue">يرجى تسجيل الدخول للمتابعة</div>
+        <label data-ar="المستخدم" data-en="User">المستخدم</label>
+        <select id="loginUserSelect">
+            <option value="">-- اختر --</option>
+            <option value="admin">👑 المسؤول (أدمن)</option>
+        </select>
+        <label data-ar="كلمة المرور / الكود" data-en="Password / PIN">كلمة المرور / الكود</label>
+        <input type="password" id="loginPassword" placeholder="••••" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()">
+        <div class="login-err" id="loginError"></div>
+        <button class="login-btn" onclick="doLogin()" data-ar="🔓 دخول" data-en="🔓 Login">🔓 دخول</button>
+        <div class="login-footer" data-ar="كل تعديل يُسجّل بتوقيع المهندس والتاريخ والوقت" data-en="Every change is signed with engineer name + timestamp">كل تعديل يُسجّل بتوقيع المهندس والتاريخ والوقت</div>
+    </div>
+</div>
 
 <div class="header">
     <div>
@@ -305,6 +365,11 @@ body[dir="ltr"] .map-info-box{border-right:none;border-left:4px solid #2874A6}
         <div class="subtitle" id="appSubtitle">إدارة التوزيع على المهندسين + التحليل الكامل + جمع البيانات</div>
     </div>
     <div class="header-actions">
+        <span class="user-chip" id="userChip" style="display:none;">
+            <span class="role-dot" id="userRoleDot"></span>
+            <span id="userChipName"></span>
+            <button class="logout-btn" onclick="doLogout()" title="خروج">🚪</button>
+        </span>
         <span class="mode-badge" id="modeBadge">🏢 نسخة رئيسية</span>
         <button class="lang-toggle" onclick="toggleLang()" id="langBtn">🌐 EN</button>
         <button class="btn btn-primary" onclick="exportData()" data-ar="💾 نسخة احتياطية" data-en="💾 Backup">💾 نسخة احتياطية</button>
@@ -550,6 +615,9 @@ function getPivotStatus(pivot) {
         if (t && Object.keys(t.operations||{}).some(k => OPS.find(o=>o.id===k)?.type==='prep' && (t.operations[k].status==='done'||t.operations[k].status==='in-progress'))) return 'prep';
         return 'not-started';
     }
+    // Don't mark as "planted" before the planting date actually arrives
+    const today = new Date().toISOString().slice(0,10);
+    if (t.plantingDate > today) return 'prep';
     if (t.operations?.harvest?.actualDate) return 'harvested';
     return 'planted';
 }
@@ -772,7 +840,9 @@ function renderEngineers() {
         const e = ASSIGNMENTS[r.pivot] || 'unassigned';
         counts[e] = (counts[e] || 0) + 1;
     });
-    
+
+    const adminHtml = renderAdminPanel();
+
     const addForm = `
         <div style="background:#F0F8FF;padding:16px;border-radius:10px;margin-bottom:14px;border:2px dashed #2874A6;">
             <h3 style="color:#2874A6;margin-bottom:10px;font-size:1rem;">➕ ${LANG==='ar'?'إضافة مهندس جديد':'Add new engineer'}</h3>
@@ -815,7 +885,7 @@ function renderEngineers() {
                 </div>`;
         }).join('');
     
-    ep.innerHTML = addForm + engineersList + `
+    ep.innerHTML = adminHtml + addForm + engineersList + `
         <div style="margin-top:16px;padding:12px;background:#F8FAF9;border-radius:8px;font-size:0.85rem;color:#555;">
             <strong style="color:#1B4332;">${LANG==='ar'?'ملاحظة:':'Note:'}</strong>
             ${LANG==='ar' ? 'أضف المهندسين أولاً، ثم افتح أي محور من الجدول الرئيسي واختر المهندس المسؤول عنه.' : 'Add engineers first, then open any pivot from the main table and select the responsible engineer.'}
@@ -929,12 +999,26 @@ function setPlantingDate() {
     const date = document.getElementById('plantingDateInput').value;
     if (!date) { alert(L('enterDate')); return; }
     const t = getPivotData(currentPivot);
+    const s = sign();
     t.plantingDate = date;
+    t.plantingSetBy = s.by;
+    t.plantingSetByName = s.byName;
+    t.plantingSetAt = s.at;
     if (!t.operations.planting) t.operations.planting = {};
-    t.operations.planting.actualDate = date;
-    t.operations.planting.status = 'done';
+    const today = new Date().toISOString().slice(0,10);
+    // Only mark planting as done if date is today or in the past
+    if (date <= today) {
+        t.operations.planting.actualDate = date;
+        t.operations.planting.status = 'done';
+    } else {
+        t.operations.planting.actualDate = '';
+        t.operations.planting.status = 'pending';
+    }
+    t.operations.planting.markedBy = s.by;
+    t.operations.planting.markedByName = s.byName;
     t.updated = new Date().toISOString();
     saveTracking();
+    auditLog('edit', currentPivot, `تاريخ الزراعة: ${date}`);
     openModal(currentPivot);
 }
 
@@ -943,11 +1027,16 @@ function saveTechSpecs() {
     const flow = document.getElementById('flowInput').value;
     const measureDate = document.getElementById('measureDateInput').value;
     const t = getPivotData(currentPivot);
+    const s = sign();
     t.rpm = rpm ? parseInt(rpm) : null;
     t.wellFlow = flow ? parseFloat(flow) : null;
     t.measureDate = measureDate || null;
+    t.recordedBy = s.by;
+    t.recordedByName = s.byName;
+    t.recordedAt = s.at;
     t.updated = new Date().toISOString();
     saveTracking();
+    auditLog('edit', currentPivot, `بيانات فنية: RPM=${rpm||'—'}, Flow=${flow||'—'}`);
     openModal(currentPivot);
 }
 
@@ -1321,8 +1410,13 @@ function setOpDate(opId, date) {
     if (!t.operations[opId]) t.operations[opId] = {};
     t.operations[opId].actualDate = date;
     if (date) t.operations[opId].status = 'done';
+    const s = sign();
+    t.operations[opId].markedBy = s.by;
+    t.operations[opId].markedByName = s.byName;
+    t.operations[opId].markedAt = s.at;
     t.updated = new Date().toISOString();
     saveTracking();
+    auditLog('edit', currentPivot, `تاريخ عملية ${opId}: ${date}`);
     renderOpsTable();
 }
 function toggleOpStatus(opId) {
@@ -1335,8 +1429,13 @@ function toggleOpStatus(opId) {
         t.operations[opId].status = 'done';
         if (!t.operations[opId].actualDate) t.operations[opId].actualDate = new Date().toISOString().slice(0,10);
     }
+    const s = sign();
+    t.operations[opId].markedBy = s.by;
+    t.operations[opId].markedByName = s.byName;
+    t.operations[opId].markedAt = s.at;
     t.updated = new Date().toISOString();
     saveTracking();
+    auditLog('edit', currentPivot, `حالة عملية ${opId}: ${t.operations[opId].status}`);
     renderOpsTable();
 }
 
@@ -1345,9 +1444,11 @@ function addNote() {
     const text = input.value.trim();
     if (!text) return;
     const t = getPivotData(currentPivot);
-    t.notes.push({ text, date: new Date().toISOString() });
+    const s = sign();
+    t.notes.push({ text, date: new Date().toISOString(), by: s.by, byName: s.byName });
     t.updated = new Date().toISOString();
     saveTracking();
+    auditLog('add', currentPivot, `ملاحظة: ${text.slice(0,50)}`);
     input.value = '';
     renderNotesList();
 }
@@ -1369,9 +1470,10 @@ function renderNotesList() {
             const i = t.notes.length - 1 - ri;
             const cls = n.fromEngineer ? 'from-engineer' : '';
             const tag = n.fromEngineer ? `<span class="engineer-note-tag">📥 ${ENGINEERS[n.fromEngineer]?.[LANG] || n.fromEngineer}</span>` : '';
+            const authorTag = n.byName ? `<span class="signature"> · ✍️ ${escapeHtml(n.byName)}</span>` : '';
             return `<div class="note-item ${cls}">
                     <button class="del" onclick="deleteNote(${i})">🗑️</button>
-                    <div class="date">📅 ${fmtDateTime(n.date)}${tag}</div>
+                    <div class="date">📅 ${fmtDateTime(n.date)}${tag}${authorTag}</div>
                     <div style="white-space:pre-wrap;">${escapeHtml(n.text)}</div>
                 </div>`;
         }).join('');
@@ -1380,13 +1482,19 @@ function renderNotesList() {
 function uploadImages(e) {
     const files = Array.from(e.target.files);
     const t = getPivotData(currentPivot);
+    const s = sign();
     let processed = 0;
     files.forEach(file => {
         const r = new FileReader();
         r.onload = ev => {
-            t.images.push({ data: ev.target.result, name: file.name, date: new Date().toISOString() });
+            t.images.push({ data: ev.target.result, name: file.name, date: new Date().toISOString(), by: s.by, byName: s.byName });
             processed++;
-            if (processed === files.length) { t.updated = new Date().toISOString(); saveTracking(); renderMedia(); }
+            if (processed === files.length) {
+                t.updated = new Date().toISOString();
+                saveTracking();
+                auditLog('add', currentPivot, `${files.length} صور`);
+                renderMedia();
+            }
         };
         r.readAsDataURL(file);
     });
@@ -2090,6 +2198,8 @@ function renderAnalysis() {
             </div>`;
         })()}
 
+        ${renderAuditLog()}
+
         <div class="analysis-card" style="margin-top:14px;">
             <h3>📥 ${LANG==='ar'?'تصدير سريع':'Quick Export'}</h3>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
@@ -2173,9 +2283,183 @@ function closeMapFS() {
 
 function renderAll() { renderKPIs(); renderTable(); }
 
+// ═══ AUTHENTICATION & AUDIT ═══
+const AUTH_KEY = 'wheat2027_v4_auth';
+const SESSION_KEY = 'wheat2027_v4_session';
+const AUDIT_KEY = 'wheat2027_v4_audit';
+let AUTH = { adminPassword:'admin2027', enginePins:{} };
+let CURRENT_USER = null;
+let AUDIT_LOG = [];
+
+function loadAuth() {
+    try { const a = JSON.parse(localStorage.getItem(AUTH_KEY)||'null'); if (a) AUTH = {...AUTH, ...a}; } catch(e) {}
+    try { AUDIT_LOG = JSON.parse(localStorage.getItem(AUDIT_KEY)||'[]'); } catch(e) { AUDIT_LOG = []; }
+    try { CURRENT_USER = JSON.parse(localStorage.getItem(SESSION_KEY)||'null'); } catch(e) { CURRENT_USER = null; }
+}
+function saveAuth() { try { localStorage.setItem(AUTH_KEY, JSON.stringify(AUTH)); } catch(e){} }
+function saveAudit() { try { if (AUDIT_LOG.length > 2000) AUDIT_LOG.splice(0, AUDIT_LOG.length-2000); localStorage.setItem(AUDIT_KEY, JSON.stringify(AUDIT_LOG)); } catch(e){} }
+function saveSession() { try { if (CURRENT_USER) localStorage.setItem(SESSION_KEY, JSON.stringify(CURRENT_USER)); else localStorage.removeItem(SESSION_KEY); } catch(e){} }
+
+function sign() {
+    return {
+        by: CURRENT_USER?.id || 'unknown',
+        byName: CURRENT_USER?.name || 'غير معروف',
+        at: new Date().toISOString()
+    };
+}
+
+function auditLog(action, pivot, details) {
+    AUDIT_LOG.push({
+        ...sign(),
+        action, pivot: pivot || '', details: details || ''
+    });
+    saveAudit();
+}
+
+function populateLoginDropdown() {
+    const sel = document.getElementById('loginUserSelect');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">-- اختر --</option><option value="admin">👑 المسؤول (أدمن)</option>';
+    Object.keys(ENGINEERS).forEach(id => {
+        const e = ENGINEERS[id];
+        sel.innerHTML += `<option value="${id}">👷 ${e.ar || e.en || id}</option>`;
+    });
+}
+
+function doLogin() {
+    const userId = document.getElementById('loginUserSelect').value;
+    const pw = document.getElementById('loginPassword').value;
+    const errEl = document.getElementById('loginError');
+    errEl.classList.remove('show');
+
+    if (!userId) { errEl.textContent = '⚠️ اختر المستخدم'; errEl.classList.add('show'); return; }
+    if (!pw) { errEl.textContent = '⚠️ أدخل كلمة المرور'; errEl.classList.add('show'); return; }
+
+    let valid = false, role, name;
+    if (userId === 'admin') {
+        if (pw === AUTH.adminPassword) { valid = true; role = 'admin'; name = 'المسؤول'; }
+    } else {
+        const engPin = AUTH.enginePins[userId];
+        if (!engPin) { errEl.textContent = '⚠️ لم يتم تعيين كود لك بعد — اتصل بالمسؤول'; errEl.classList.add('show'); return; }
+        if (pw === engPin) { valid = true; role = 'engineer'; name = ENGINEERS[userId]?.ar || ENGINEERS[userId]?.en || userId; }
+    }
+
+    if (!valid) { errEl.textContent = '❌ كلمة مرور خاطئة'; errEl.classList.add('show'); return; }
+
+    CURRENT_USER = { id: userId, name, role, loggedInAt: new Date().toISOString() };
+    saveSession();
+    auditLog('login', '', `دخول: ${name}`);
+    showApp();
+}
+
+function doLogout() {
+    if (!confirm('تسجيل الخروج؟')) return;
+    auditLog('logout', '', `خروج: ${CURRENT_USER?.name || ''}`);
+    CURRENT_USER = null;
+    saveSession();
+    document.getElementById('loginUserSelect').value = '';
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginOverlay').style.display = 'flex';
+    document.getElementById('userChip').style.display = 'none';
+}
+
+function showApp() {
+    document.getElementById('loginOverlay').style.display = 'none';
+    const chip = document.getElementById('userChip');
+    chip.style.display = 'flex';
+    document.getElementById('userChipName').textContent = CURRENT_USER.name;
+    document.getElementById('userRoleDot').className = 'role-dot ' + (CURRENT_USER.role === 'admin' ? 'admin' : '');
+    renderAll();
+    if (document.getElementById('panel1').classList.contains('active')) renderEngineers();
+}
+
+function requireAuth() {
+    populateLoginDropdown();
+    if (CURRENT_USER) { showApp(); } else { document.getElementById('loginOverlay').style.display = 'flex'; }
+}
+
+function isAdmin() { return CURRENT_USER?.role === 'admin'; }
+
+function renderAdminPanel() {
+    if (!isAdmin()) return '';
+    let html = `<div class="admin-section">
+        <h3>👑 لوحة المسؤول — إدارة الدخول</h3>
+        <div class="admin-row" style="background:#FFF3CD;border:1px solid #D4A017;">
+            <div class="name">🔐 كلمة مرور المسؤول:</div>
+            <input type="password" id="adminPwInput" placeholder="جديدة" style="width:150px;">
+            <button onclick="changeAdminPassword()">💾 تغيير</button>
+            ${AUTH.adminPassword === 'admin2027' ? '<span style="color:#C0392B;font-size:0.75rem;font-weight:700;">⚠️ غيرها فوراً!</span>' : '<span style="color:#27AE60;font-size:0.75rem;">✅ مخصصة</span>'}
+        </div>
+        <div style="font-size:0.85rem;color:#7A5A00;margin:8px 0 6px;font-weight:700;">أكواد المهندسين (4 أرقام):</div>`;
+    const engIds = Object.keys(ENGINEERS);
+    if (engIds.length === 0) {
+        html += '<div style="color:#999;font-size:0.85rem;padding:8px;">أضف مهندسين أولاً من القسم أدناه، ثم ارجع هنا لتعيين أكوادهم.</div>';
+    } else {
+        engIds.forEach(id => {
+            const e = ENGINEERS[id];
+            const pin = AUTH.enginePins[id] || '';
+            html += `<div class="admin-row">
+                <div class="name">${e.ar || e.en || id}</div>
+                <input type="text" id="pin-${id}" value="${pin}" maxlength="6" placeholder="4 أرقام" inputmode="numeric">
+                <button onclick="setEnginePin('${id}')">💾 حفظ</button>
+                ${pin ? `<span style="color:#27AE60;font-size:0.75rem;">✅ مفعّل</span>` : `<span style="color:#C0392B;font-size:0.75rem;">⚠️ غير مفعّل</span>`}
+            </div>`;
+        });
+    }
+    html += `</div>`;
+    return html;
+}
+
+function changeAdminPassword() {
+    const newPw = document.getElementById('adminPwInput').value.trim();
+    if (newPw.length < 4) { alert('⚠️ كلمة المرور يجب أن تكون 4 أحرف على الأقل'); return; }
+    AUTH.adminPassword = newPw;
+    saveAuth();
+    auditLog('edit', '', 'تغيير كلمة مرور المسؤول');
+    alert('✅ تم تغيير كلمة مرور المسؤول');
+    renderEngineers();
+}
+
+function setEnginePin(engId) {
+    const pin = document.getElementById('pin-'+engId).value.trim();
+    if (!pin) { if (!confirm('مسح الكود؟')) return; delete AUTH.enginePins[engId]; }
+    else {
+        if (pin.length < 3) { alert('⚠️ الكود يجب 3 أرقام على الأقل'); return; }
+        AUTH.enginePins[engId] = pin;
+    }
+    saveAuth();
+    auditLog('edit', '', `تعيين كود للمهندس: ${ENGINEERS[engId]?.ar || engId}`);
+    alert('✅ تم الحفظ');
+    renderEngineers();
+}
+
+function renderAuditLog() {
+    if (!isAdmin()) return '';
+    const actionLabels = {login:'🔓 دخول', logout:'🚪 خروج', add:'➕ إضافة', edit:'✏️ تعديل', delete:'🗑️ حذف', view:'👁️ عرض'};
+    const latest = [...AUDIT_LOG].reverse().slice(0, 100);
+    if (latest.length === 0) return '';
+    return `<div class="analysis-card" style="margin-top:14px;border-top:4px solid #D4A017;">
+        <h3 style="border-bottom-color:#D4A017;">📜 سجل التعديلات (آخر 100)</h3>
+        <div class="audit-box"><div style="overflow-x:auto;"><table class="audit-table">
+            <thead><tr><th>التاريخ والوقت</th><th>المستخدم</th><th>المحور</th><th>الإجراء</th><th>التفاصيل</th></tr></thead>
+            <tbody>
+            ${latest.map(e => `<tr>
+                <td style="white-space:nowrap;font-family:monospace;font-size:0.72rem;">${new Date(e.at).toLocaleString('ar-SA')}</td>
+                <td style="font-weight:700;">${escapeHtml(e.byName || e.by || '—')}</td>
+                <td>${escapeHtml(e.pivot || '—')}</td>
+                <td><span class="action-tag ${e.action || 'edit'}">${actionLabels[e.action] || e.action}</span></td>
+                <td style="font-size:0.72rem;">${escapeHtml(e.details || '')}</td>
+            </tr>`).join('')}
+            </tbody></table></div>
+        </div>
+    </div>`;
+}
+
 try { LANG = localStorage.getItem(LANG_KEY) || 'ar'; } catch(e) {}
 loadTracking();
+loadAuth();
 applyLang();
+requireAuth();
 </script>
 </body>
 </html>
