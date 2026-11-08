@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" id="htmlRoot">
+<html lang="en" dir="rtl" id="htmlRoot">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -592,8 +592,10 @@ const T = {
 function applyLang() {
     const dir = LANG === 'ar' ? 'rtl' : 'ltr';
     document.getElementById('htmlRoot').setAttribute('dir', dir);
-    document.getElementById('htmlRoot').setAttribute('lang', LANG);
+    // Keep lang="en" always so date inputs show English format (dd/mm/yyyy) not reversed Arabic
+    document.getElementById('htmlRoot').setAttribute('lang', 'en');
     document.getElementById('bodyRoot').setAttribute('dir', dir);
+    document.getElementById('bodyRoot').setAttribute('lang', 'en');
     document.getElementById('langBtn').textContent = LANG === 'ar' ? '🌐 EN' : '🌐 AR';
     document.querySelectorAll('[data-ar]').forEach(el => {
         const txt = el.getAttribute('data-' + LANG);
