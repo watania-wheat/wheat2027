@@ -334,8 +334,12 @@ body[dir="ltr"] .map-info-box{border-right:none;border-left:4px solid #2874A6}
 .action-tag.login{background:#D4A017}.action-tag.view{background:#8E44AD}
 .signature{font-size:0.65rem;color:#777;font-style:italic}
 /* Fix RTL date input display */
-input[type="date"]{direction:ltr;text-align:center;unicode-bidi:plaintext}
-body[dir="rtl"] input[type="date"]::-webkit-datetime-edit{direction:ltr;text-align:center}
+input[type="date"]{direction:ltr !important;text-align:center !important;unicode-bidi:bidi-override !important}
+input[type="date"]::-webkit-datetime-edit{direction:ltr !important;text-align:center !important}
+input[type="date"]::-webkit-datetime-edit-fields-wrapper{direction:ltr !important}
+input[type="date"]::-webkit-datetime-edit-year-field,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field{direction:ltr !important;text-align:center !important}
 /* Archive styles */
 .archive-box{background:white;padding:14px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
 .archive-header{background:linear-gradient(135deg,#8E44AD 0%,#6C3483 100%);color:white;padding:14px 16px;border-radius:10px;margin-bottom:12px}
@@ -971,6 +975,8 @@ function openModal(pivot) {
         </div>
         
         <div class="tech-specs-box">
+            <div style="width:100%;font-weight:700;color:#1B4332;font-size:0.95rem;margin-bottom:5px;border-bottom:2px solid #AED6F1;padding-bottom:4px;">⚙️ المواصفات والقراءات الفنية</div>
+
             <div class="tech-item">
                 <label>⚙️ ${LANG==='ar'?'سرعة الماكينة (RPM):':'Machine RPM:'}</label>
                 <input type="number" id="rpmInput" value="${t.rpm || ''}" placeholder="${LANG==='ar'?'مثال: 1800':'e.g. 1800'}" min="0" max="3000">
@@ -985,14 +991,67 @@ function openModal(pivot) {
                 <label>📅 ${LANG==='ar'?'تاريخ القياس:':'Measured on:'}</label>
                 <input type="date" id="measureDateInput" value="${t.measureDate || ''}">
             </div>
-            <button onclick="saveTechSpecs()" style="background:#2874A6;color:white;border:none;padding:9px 16px;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:700;">
-                💾 ${LANG==='ar'?'حفظ':'Save'}
+
+            <div style="width:100%;font-weight:700;color:#1B4332;font-size:0.9rem;margin-top:8px;margin-bottom:3px;border-bottom:1px dashed #AED6F1;padding-bottom:3px;">📊 القراءات الأولية (عند أول تشغيل الموسم)</div>
+
+            <div class="tech-item">
+                <label>💧 ${LANG==='ar'?'عداد المياه الكلي (م³):':'Total water meter (m³):'}</label>
+                <input type="number" id="initWaterInput" value="${t.initWaterMeter || ''}" placeholder="${LANG==='ar'?'مثال: 125000':'e.g. 125000'}" min="0" step="1">
+                <span style="font-size:0.75rem;color:#777;">م³</span>
+            </div>
+            <div class="tech-item">
+                <label>🔧 ${LANG==='ar'?'عداد ساعات المكينة:':'Engine hour meter:'}</label>
+                <input type="number" id="initEngineHoursInput" value="${t.initEngineHours || ''}" placeholder="${LANG==='ar'?'مثال: 8500':'e.g. 8500'}" min="0" step="1">
+                <span style="font-size:0.75rem;color:#777;">ساعة</span>
+            </div>
+            <div class="tech-item">
+                <label>🔄 ${LANG==='ar'?'عداد ساعات المحور:':'Pivot hour meter:'}</label>
+                <input type="number" id="initPivotHoursInput" value="${t.initPivotHours || ''}" placeholder="${LANG==='ar'?'مثال: 6200':'e.g. 6200'}" min="0" step="1">
+                <span style="font-size:0.75rem;color:#777;">ساعة</span>
+            </div>
+
+            <div style="width:100%;font-weight:700;color:#1B4332;font-size:0.9rem;margin-top:8px;margin-bottom:3px;border-bottom:1px dashed #AED6F1;padding-bottom:3px;">🔁 سرعة المحور والدورة</div>
+
+            <div class="tech-item">
+                <label>⚡ ${LANG==='ar'?'سرعة المحور الحالية (%):':'Current pivot speed (%):'}</label>
+                <input type="number" id="pivotSpeedInput" value="${t.pivotSpeed || ''}" placeholder="${LANG==='ar'?'مثال: 50':'e.g. 50'}" min="1" max="100" step="1" oninput="updateCycleCalc()">
+                <span style="font-size:0.75rem;color:#777;">%</span>
+            </div>
+            <div class="tech-item">
+                <label>⏱️ ${LANG==='ar'?'زمن دورة كاملة عند 100% (س):':'Full cycle @100% (hr):'}</label>
+                <input type="number" id="refCycleInput" value="${t.refCycleHours || 20}" placeholder="20" min="1" step="0.5" oninput="updateCycleCalc()">
+                <span style="font-size:0.75rem;color:#777;">ساعة</span>
+            </div>
+            <div class="tech-item" style="background:#FFF3C4;padding:7px;border-radius:7px;border:1px dashed #D4A017;">
+                <label style="color:#7A5A00;">🧮 ${LANG==='ar'?'زمن الدورة المحسوب:':'Calculated cycle time:'}</label>
+                <div id="cycleResult" style="font-size:1.1rem;font-weight:700;color:#7A5A00;padding:4px 10px;">${t.pivotSpeed && t.refCycleHours ? (t.refCycleHours/(t.pivotSpeed/100)).toFixed(1) : '—'}</div>
+                <span style="font-size:0.75rem;color:#7A5A00;">ساعة/دورة</span>
+            </div>
+
+            <div style="width:100%;font-weight:700;color:#1B4332;font-size:0.9rem;margin-top:8px;margin-bottom:3px;border-bottom:1px dashed #AED6F1;padding-bottom:3px;">🚿 ري التجهيز (قبل الزراعة)</div>
+
+            <div class="tech-item">
+                <label>⏰ ${LANG==='ar'?'ساعات تشغيل ري التجهيز:':'Prep irrigation hours:'}</label>
+                <input type="number" id="prepIrrHoursInput" value="${t.prepIrrHours || ''}" placeholder="${LANG==='ar'?'مثال: 48':'e.g. 48'}" min="0" step="0.5">
+                <span style="font-size:0.75rem;color:#777;">ساعة</span>
+            </div>
+            <div class="tech-item">
+                <label>📅 ${LANG==='ar'?'تاريخ ري التجهيز:':'Prep irr. date:'}</label>
+                <input type="date" id="prepIrrDateInput" value="${t.prepIrrDate || ''}">
+            </div>
+
+            <button onclick="saveTechSpecs()" style="background:#2874A6;color:white;border:none;padding:9px 20px;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:700;margin-top:6px;">
+                💾 ${LANG==='ar'?'حفظ كل البيانات':'Save all'}
             </button>
-            ${t.rpm || t.wellFlow ? `<div style="width:100%;margin-top:6px;font-size:0.8rem;color:#1B4332;">
-                ${t.rpm ? `<strong>⚙️ ${t.rpm} RPM</strong>` : ''}
-                ${t.rpm && t.wellFlow ? ' | ' : ''}
-                ${t.wellFlow ? `<strong>💧 ${t.wellFlow} ${LANG==='ar'?'م³/س':'m³/h'}</strong>` : ''}
-                ${t.measureDate ? ` | ${LANG==='ar'?'بتاريخ':'on'} ${fmtDate(t.measureDate)}` : ''}
+            ${t.rpm || t.wellFlow || t.initWaterMeter || t.pivotSpeed || t.prepIrrHours ? `<div style="width:100%;margin-top:8px;font-size:0.8rem;color:#1B4332;background:#F0F8FF;padding:8px 10px;border-radius:7px;line-height:1.7;">
+                <strong>📋 ملخص القراءات المحفوظة:</strong><br>
+                ${t.rpm ? `<strong>⚙️ RPM:</strong> ${t.rpm} · ` : ''}
+                ${t.wellFlow ? `<strong>💧 التصرف:</strong> ${t.wellFlow} م³/س · ` : ''}
+                ${t.initWaterMeter ? `<strong>💧 عداد المياه:</strong> ${Number(t.initWaterMeter).toLocaleString()} م³ · ` : ''}
+                ${t.initEngineHours ? `<strong>🔧 ساعات المكينة:</strong> ${Number(t.initEngineHours).toLocaleString()} س · ` : ''}
+                ${t.initPivotHours ? `<strong>🔄 ساعات المحور:</strong> ${Number(t.initPivotHours).toLocaleString()} س · ` : ''}
+                ${t.pivotSpeed && t.refCycleHours ? `<strong>⚡ السرعة:</strong> ${t.pivotSpeed}% (دورة: ${(t.refCycleHours/(t.pivotSpeed/100)).toFixed(1)} س) · ` : ''}
+                ${t.prepIrrHours ? `<strong>🚿 ري التجهيز:</strong> ${t.prepIrrHours} س${t.prepIrrDate?' بتاريخ '+fmtDate(t.prepIrrDate):''}` : ''}
             </div>` : ''}
         </div>
         <div id="experimentSection"></div>
@@ -1055,18 +1114,44 @@ function saveTechSpecs() {
     const rpm = document.getElementById('rpmInput').value;
     const flow = document.getElementById('flowInput').value;
     const measureDate = document.getElementById('measureDateInput').value;
+    const initWater = document.getElementById('initWaterInput').value;
+    const initEngineHours = document.getElementById('initEngineHoursInput').value;
+    const initPivotHours = document.getElementById('initPivotHoursInput').value;
+    const pivotSpeed = document.getElementById('pivotSpeedInput').value;
+    const refCycle = document.getElementById('refCycleInput').value;
+    const prepIrrHours = document.getElementById('prepIrrHoursInput').value;
+    const prepIrrDate = document.getElementById('prepIrrDateInput').value;
     const t = getPivotData(currentPivot);
     const s = sign();
     t.rpm = rpm ? parseInt(rpm) : null;
     t.wellFlow = flow ? parseFloat(flow) : null;
     t.measureDate = measureDate || null;
+    t.initWaterMeter = initWater ? parseInt(initWater) : null;
+    t.initEngineHours = initEngineHours ? parseFloat(initEngineHours) : null;
+    t.initPivotHours = initPivotHours ? parseFloat(initPivotHours) : null;
+    t.pivotSpeed = pivotSpeed ? parseInt(pivotSpeed) : null;
+    t.refCycleHours = refCycle ? parseFloat(refCycle) : null;
+    t.prepIrrHours = prepIrrHours ? parseFloat(prepIrrHours) : null;
+    t.prepIrrDate = prepIrrDate || null;
     t.recordedBy = s.by;
     t.recordedByName = s.byName;
     t.recordedAt = s.at;
     t.updated = new Date().toISOString();
     saveTracking();
-    auditLog('edit', currentPivot, `بيانات فنية: RPM=${rpm||'—'}, Flow=${flow||'—'}`);
+    auditLog('edit', currentPivot, `بيانات فنية محفوظة`);
+    alert('✅ تم حفظ البيانات');
     openModal(currentPivot);
+}
+
+function updateCycleCalc() {
+    const speed = parseFloat(document.getElementById('pivotSpeedInput').value);
+    const ref = parseFloat(document.getElementById('refCycleInput').value);
+    const result = document.getElementById('cycleResult');
+    if (speed && ref && speed > 0) {
+        result.textContent = (ref / (speed/100)).toFixed(1);
+    } else {
+        result.textContent = '—';
+    }
 }
 
 // ═══ EXPERIMENTS / TRIALS ═══
