@@ -333,13 +333,10 @@ body[dir="ltr"] .map-info-box{border-right:none;border-left:4px solid #2874A6}
 .action-tag.add{background:#27AE60}.action-tag.edit{background:#2874A6}.action-tag.delete{background:#C0392B}
 .action-tag.login{background:#D4A017}.action-tag.view{background:#8E44AD}
 .signature{font-size:0.65rem;color:#777;font-style:italic}
-/* Fix RTL date input display */
-input[type="date"]{direction:ltr !important;text-align:center !important;unicode-bidi:bidi-override !important}
+/* Fix RTL date input display - force English locale on fields */
+input[type="date"]{direction:ltr !important;text-align:center !important}
 input[type="date"]::-webkit-datetime-edit{direction:ltr !important;text-align:center !important}
 input[type="date"]::-webkit-datetime-edit-fields-wrapper{direction:ltr !important}
-input[type="date"]::-webkit-datetime-edit-year-field,
-input[type="date"]::-webkit-datetime-edit-month-field,
-input[type="date"]::-webkit-datetime-edit-day-field{direction:ltr !important;text-align:center !important}
 /* Archive styles */
 .archive-box{background:white;padding:14px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
 .archive-header{background:linear-gradient(135deg,#8E44AD 0%,#6C3483 100%);color:white;padding:14px 16px;border-radius:10px;margin-bottom:12px}
@@ -2809,6 +2806,19 @@ loadAuth();
 loadArchive();
 applyLang();
 requireAuth();
+
+// Force English locale on all date inputs to fix mirrored Arabic placeholder
+function fixDateInputs() {
+    document.querySelectorAll('input[type="date"]').forEach(el => {
+        if (el.getAttribute('lang') !== 'en-GB') el.setAttribute('lang', 'en-GB');
+        el.style.direction = 'ltr';
+    });
+}
+try {
+    fixDateInputs();
+    const dateObs = new MutationObserver(() => fixDateInputs());
+    dateObs.observe(document.body, { childList: true, subtree: true });
+} catch(e) { console.warn('Date input observer failed:', e); }
 </script>
 </body>
 </html>
