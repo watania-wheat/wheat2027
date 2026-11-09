@@ -607,14 +607,14 @@ const DEFAULT_ENGINEERS = {
     eng_abdullah:    { ar: 'م. عبدالله',     en: 'Eng. Abdullah',    zone: 'منطقة 2', color: '#2874A6', role: 'engineer', parent: null },
     eng_abdulrahman: { ar: 'م. عبدالرحمن',   en: 'Eng. Abdulrahman', zone: 'منطقة 3', color: '#D4A017', role: 'engineer', parent: null },
     eng_abdullatif:  { ar: 'م. عبداللطيف',   en: 'Eng. Abdullatif',  zone: 'منطقة 4', color: '#8E44AD', role: 'engineer', parent: null },
-    frm_shaban:      { ar: 'ف. محمد شعبان', en: 'Foreman M. Shaban', zone: '—', color: '#E67E22', role: 'foreman', parent: null },
-    frm_iskandar:    { ar: 'ف. اسكندر',     en: 'Foreman Iskandar',  zone: '—', color: '#E67E22', role: 'foreman', parent: null },
-    frm_nahid:       { ar: 'ف. ناهيد',       en: 'Foreman Nahid',     zone: '—', color: '#E67E22', role: 'foreman', parent: null },
-    frm_suresh:      { ar: 'ف. سوريش',       en: 'Foreman Suresh',    zone: '—', color: '#E67E22', role: 'foreman', parent: null },
-    frm_tawhid:      { ar: 'ف. توحيد',       en: 'Foreman Tawhid',    zone: '—', color: '#E67E22', role: 'foreman', parent: null },
-    frm_ashiq:       { ar: 'ف. عاشق',        en: 'Foreman Ashiq',     zone: '—', color: '#E67E22', role: 'foreman', parent: null },
-    frm_imarat:      { ar: 'ف. امارات',      en: 'Foreman Imarat',    zone: '—', color: '#E67E22', role: 'foreman', parent: null },
-    frm_madhu:       { ar: 'ف. مدو',         en: 'Foreman Madhu',     zone: '—', color: '#E67E22', role: 'foreman', parent: null },
+    frm_shaban:      { ar: 'ف. محمد شعبان', en: 'Foreman M. Shaban', zone: 'منطقة 1', color: '#27AE60', role: 'foreman', parent: 'eng_osama' },
+    frm_iskandar:    { ar: 'ف. اسكندر',     en: 'Foreman Iskandar',  zone: 'منطقة 1', color: '#27AE60', role: 'foreman', parent: 'eng_osama' },
+    frm_nahid:       { ar: 'ف. ناهيد',       en: 'Foreman Nahid',     zone: 'منطقة 2', color: '#2874A6', role: 'foreman', parent: 'eng_abdullah' },
+    frm_suresh:      { ar: 'ف. سوريش',       en: 'Foreman Suresh',    zone: 'منطقة 2', color: '#2874A6', role: 'foreman', parent: 'eng_abdullah' },
+    frm_tawhid:      { ar: 'ف. توحيد',       en: 'Foreman Tawhid',    zone: 'منطقة 3', color: '#D4A017', role: 'foreman', parent: 'eng_abdulrahman' },
+    frm_ashiq:       { ar: 'ف. عاشق',        en: 'Foreman Ashiq',     zone: 'منطقة 3', color: '#D4A017', role: 'foreman', parent: 'eng_abdulrahman' },
+    frm_imarat:      { ar: 'ف. امارات',      en: 'Foreman Imarat',    zone: 'منطقة 4', color: '#8E44AD', role: 'foreman', parent: 'eng_abdullatif' },
+    frm_madhu:       { ar: 'ف. مدو',         en: 'Foreman Madhu',     zone: 'منطقة 4', color: '#8E44AD', role: 'foreman', parent: 'eng_abdullatif' },
 };
 const DEFAULT_PINS = {
     eng_osama: '1001',
@@ -691,8 +691,16 @@ function loadTracking() {
     try { ENGINEERS = JSON.parse(localStorage.getItem(ENGINEERS_KEY) || '{}'); } catch(e) { ENGINEERS = {}; }
     // Merge hardcoded defaults (so engineers are synced across all devices)
     Object.keys(DEFAULT_ENGINEERS).forEach(k => {
-        if (!ENGINEERS[k]) ENGINEERS[k] = {...DEFAULT_ENGINEERS[k]};
-        else ENGINEERS[k] = {...DEFAULT_ENGINEERS[k], ...ENGINEERS[k]}; // keep local overrides but ensure defaults exist
+        const def = DEFAULT_ENGINEERS[k];
+        if (!ENGINEERS[k]) {
+            ENGINEERS[k] = {...def};
+        } else {
+            // Merge: defaults provide base, local keeps overrides EXCEPT for parent (foreman→engineer link always from default unless user has set it to a different engineer explicitly)
+            const local = ENGINEERS[k];
+            ENGINEERS[k] = {...def, ...local};
+            // If local parent is null/empty but default has one, use default
+            if (!local.parent && def.parent) ENGINEERS[k].parent = def.parent;
+        }
     });
 }
 function saveTracking() {
