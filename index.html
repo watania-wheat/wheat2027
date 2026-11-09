@@ -5,8 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wheat 2027 Tracking | متابعة قمح 2027</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:linear-gradient(180deg,#F0F5F2 0%,#F5F7F6 100%);color:#1a2e2a;line-height:1.5;padding:10px;min-height:100vh}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:rgba(0,0,0,0.05)}
+body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:linear-gradient(180deg,#F0F5F2 0%,#F5F7F6 100%);color:#1a2e2a;line-height:1.5;padding:10px;min-height:100vh;-webkit-text-size-adjust:100%}
+button{-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:rgba(0,0,0,0.1);touch-action:manipulation;cursor:pointer}
+input,select,textarea{-webkit-appearance:none;appearance:none;font-family:inherit}
+/* Prevent iOS zoom on input focus - inputs must be at least 16px */
+@media (max-width:767px){
+    input[type="text"],input[type="number"],input[type="password"],input[type="date"],input[type="email"],input[type="tel"],select,textarea{font-size:16px !important}
+}
 body[dir="rtl"]{direction:rtl}
 body[dir="ltr"]{direction:ltr}
 .app-wrapper{max-width:1600px;margin:0 auto}
@@ -914,23 +920,25 @@ function renderEngineers() {
     const adminHtml = renderAdminPanel();
 
     const addForm = `
-        <div style="background:#F0F8FF;padding:16px;border-radius:10px;margin-bottom:14px;border:2px dashed #2874A6;">
-            <h3 style="color:#2874A6;margin-bottom:10px;font-size:1rem;">➕ ${LANG==='ar'?'إضافة مهندس جديد':'Add new engineer'}</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;">
+        <div style="background:#F0F8FF;padding:14px;border-radius:10px;margin-bottom:14px;border:2px dashed #2874A6;">
+            <h3 style="color:#2874A6;margin-bottom:12px;font-size:1.05rem;">➕ ${LANG==='ar'?'إضافة مهندس جديد':'Add new engineer'}</h3>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:12px;">
                 <div>
-                    <label style="font-size:0.75rem;color:#555;display:block;margin-bottom:3px;">${LANG==='ar'?'الاسم (عربي)':'Name (Arabic)'} *</label>
-                    <input type="text" id="engNameAr" placeholder="${LANG==='ar'?'م. محمد علي':'م. محمد علي'}" style="width:100%;padding:7px 10px;border:1px solid #CED4DA;border-radius:6px;font-family:inherit;font-size:0.85rem;">
+                    <label style="font-size:0.82rem;color:#333;display:block;margin-bottom:5px;font-weight:600;">${LANG==='ar'?'الاسم (عربي)':'Name (Arabic)'} *</label>
+                    <input type="text" id="engNameAr" placeholder="${LANG==='ar'?'م. محمد علي':'م. محمد علي'}" style="width:100%;padding:11px 12px;border:1px solid #CED4DA;border-radius:7px;font-family:inherit;font-size:0.95rem;background:white;" autocomplete="off">
                 </div>
                 <div>
-                    <label style="font-size:0.75rem;color:#555;display:block;margin-bottom:3px;">${LANG==='ar'?'الاسم (إنجليزي)':'Name (English)'}</label>
-                    <input type="text" id="engNameEn" placeholder="Eng. Mohamed Ali" style="width:100%;padding:7px 10px;border:1px solid #CED4DA;border-radius:6px;font-family:inherit;font-size:0.85rem;">
+                    <label style="font-size:0.82rem;color:#333;display:block;margin-bottom:5px;font-weight:600;">${LANG==='ar'?'الاسم (إنجليزي)':'Name (English)'}</label>
+                    <input type="text" id="engNameEn" placeholder="Eng. Mohamed Ali" style="width:100%;padding:11px 12px;border:1px solid #CED4DA;border-radius:7px;font-family:inherit;font-size:0.95rem;background:white;" autocomplete="off">
                 </div>
                 <div>
-                    <label style="font-size:0.75rem;color:#555;display:block;margin-bottom:3px;">${LANG==='ar'?'المنطقة':'Zone'} *</label>
-                    <input type="text" id="engZone" placeholder="${LANG==='ar'?'منطقة 1':'Zone 1'}" style="width:100%;padding:7px 10px;border:1px solid #CED4DA;border-radius:6px;font-family:inherit;font-size:0.85rem;">
+                    <label style="font-size:0.82rem;color:#333;display:block;margin-bottom:5px;font-weight:600;">${LANG==='ar'?'المنطقة':'Zone'} *</label>
+                    <input type="text" id="engZone" placeholder="${LANG==='ar'?'منطقة 1':'Zone 1'}" style="width:100%;padding:11px 12px;border:1px solid #CED4DA;border-radius:7px;font-family:inherit;font-size:0.95rem;background:white;" autocomplete="off">
                 </div>
-                <button class="btn btn-primary" onclick="addEngineer()" style="padding:8px 16px;">✓ ${LANG==='ar'?'إضافة':'Add'}</button>
             </div>
+            <button type="button" onclick="addEngineer()" style="width:100%;background:#2874A6;color:white;border:none;padding:13px;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:700;font-size:1rem;-webkit-appearance:none;-webkit-tap-highlight-color:transparent;">
+                ✅ ${LANG==='ar'?'إضافة المهندس':'Add engineer'}
+            </button>
         </div>`;
     
     const engineersList = Object.keys(ENGINEERS).length === 0 
