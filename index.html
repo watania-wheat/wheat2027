@@ -3186,8 +3186,55 @@ function renderAdminPanel() {
         </div>`;
     }
 
+    // Publish config section
+    html += `<div class="admin-row" style="background:#E8F4FD;margin-top:12px;border:2px solid #2874A6;flex-direction:column;align-items:stretch;gap:8px;">
+        <div style="font-weight:700;color:#1B4F72;">📤 نشر الإعدادات الحالية لكل الأجهزة</div>
+        <div style="font-size:0.78rem;color:#555;line-height:1.5;">
+            التعديلات اللي سويتها (إضافة/حذف/ربط فورمان/تغيير أكواد) محفوظة على جهازك فقط.
+            صدّر الإعدادات، أرسل الملف لكلود، وهو يحدّث الكود الرئيسي ويرفعه على GitHub —
+            بعدها يظهر عند جميع المهندسين.
+        </div>
+        <button onclick="exportUserConfig()" style="background:#2874A6;color:white;border:none;padding:11px;border-radius:7px;cursor:pointer;font-family:inherit;font-weight:700;font-size:0.9rem;">
+            📤 صدّر الإعدادات الحالية
+        </button>
+    </div>`;
+
     html += `</div>`;
     return html;
+}
+
+function exportUserConfig() {
+    const engIds = Object.keys(ENGINEERS).filter(k => (ENGINEERS[k].role||'engineer')==='engineer');
+    const frmIds = Object.keys(ENGINEERS).filter(k => ENGINEERS[k].role==='foreman');
+    let snippet = '// ═══ Hardcoded engineers + foremen — synced across all devices via GitHub ═══\n';
+    snippet += 'const DEFAULT_ENGINEERS = {\n';
+    engIds.forEach(id => {
+        const e = ENGINEERS[id];
+        snippet += `    ${id}: { ar: '${(e.ar||'').replace(/'/g,"\\'")}', en: '${(e.en||'').replace(/'/g,"\\'")}', zone: '${(e.zone||'').replace(/'/g,"\\'")}', color: '${e.color||'#27AE60'}', role: 'engineer', parent: null },\n`;
+    });
+    frmIds.forEach(id => {
+        const f = ENGINEERS[id];
+        snippet += `    ${id}: { ar: '${(f.ar||'').replace(/'/g,"\\'")}', en: '${(f.en||'').replace(/'/g,"\\'")}', zone: '${(f.zone||'').replace(/'/g,"\\'")}', color: '${f.color||'#E67E22'}', role: 'foreman', parent: ${f.parent?`'${f.parent}'`:'null'} },\n`;
+    });
+    snippet += '};\n\n';
+    snippet += 'const DEFAULT_PINS = {\n';
+    Object.keys(ENGINEERS).forEach(id => {
+        const pin = AUTH.enginePins[id] || '';
+        if (pin) snippet += `    ${id}: '${pin}',\n`;
+    });
+    snippet += '};\n\n';
+    snippet += `// Admin password: ${AUTH.adminPassword}\n`;
+    snippet += `// Exported: ${new Date().toLocaleString('en-GB')}\n`;
+    snippet += `// By: ${CURRENT_USER?.name||'admin'}\n`;
+
+    const blob = new Blob([snippet], {type:'text/plain;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `wheat2027_config_${new Date().toISOString().slice(0,10)}.txt`;
+    a.click();
+
+    auditLog('edit', '', 'تصدير إعدادات المستخدمين للنشر');
+    alert('✅ تم تنزيل ملف الإعدادات.\nأرسله لكلود عشان يحدث الكود الرئيسي ويرفعه على GitHub.');
 }
 
 function setForemanParent(fId) {
