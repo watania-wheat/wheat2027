@@ -607,12 +607,28 @@ const DEFAULT_ENGINEERS = {
     eng_abdullah:    { ar: 'م. عبدالله',     en: 'Eng. Abdullah',    zone: 'منطقة 2', color: '#2874A6', role: 'engineer', parent: null },
     eng_abdulrahman: { ar: 'م. عبدالرحمن',   en: 'Eng. Abdulrahman', zone: 'منطقة 3', color: '#D4A017', role: 'engineer', parent: null },
     eng_abdullatif:  { ar: 'م. عبداللطيف',   en: 'Eng. Abdullatif',  zone: 'منطقة 4', color: '#8E44AD', role: 'engineer', parent: null },
+    frm_shaban:      { ar: 'ف. محمد شعبان', en: 'Foreman M. Shaban', zone: '—', color: '#E67E22', role: 'foreman', parent: null },
+    frm_iskandar:    { ar: 'ف. اسكندر',     en: 'Foreman Iskandar',  zone: '—', color: '#E67E22', role: 'foreman', parent: null },
+    frm_nahid:       { ar: 'ف. ناهيد',       en: 'Foreman Nahid',     zone: '—', color: '#E67E22', role: 'foreman', parent: null },
+    frm_suresh:      { ar: 'ف. سوريش',       en: 'Foreman Suresh',    zone: '—', color: '#E67E22', role: 'foreman', parent: null },
+    frm_tawhid:      { ar: 'ف. توحيد',       en: 'Foreman Tawhid',    zone: '—', color: '#E67E22', role: 'foreman', parent: null },
+    frm_ashiq:       { ar: 'ف. عاشق',        en: 'Foreman Ashiq',     zone: '—', color: '#E67E22', role: 'foreman', parent: null },
+    frm_imarat:      { ar: 'ف. امارات',      en: 'Foreman Imarat',    zone: '—', color: '#E67E22', role: 'foreman', parent: null },
+    frm_madhu:       { ar: 'ف. مدو',         en: 'Foreman Madhu',     zone: '—', color: '#E67E22', role: 'foreman', parent: null },
 };
 const DEFAULT_PINS = {
     eng_osama: '1001',
     eng_abdullah: '1002',
     eng_abdulrahman: '1003',
     eng_abdullatif: '1004',
+    frm_shaban: '2001',
+    frm_iskandar: '2002',
+    frm_nahid: '2003',
+    frm_suresh: '2004',
+    frm_tawhid: '2005',
+    frm_ashiq: '2006',
+    frm_imarat: '2007',
+    frm_madhu: '2008',
 };
 let ENGINEERS = {};
 const STORAGE_KEY = 'wheat2027_v4_master';
@@ -3063,31 +3079,69 @@ function isAdmin() { return CURRENT_USER?.role === 'admin'; }
 function renderAdminPanel() {
     if (!isAdmin()) return '';
     let html = `<div class="admin-section">
-        <h3>👑 لوحة المسؤول — إدارة الدخول</h3>
+        <h3>👑 لوحة المسؤول — إدارة الدخول والتوزيع</h3>
         <div class="admin-row" style="background:#FFF3CD;border:1px solid #D4A017;">
             <div class="name">🔐 كلمة مرور المسؤول:</div>
             <input type="password" id="adminPwInput" placeholder="جديدة" style="width:150px;">
             <button onclick="changeAdminPassword()">💾 تغيير</button>
             ${AUTH.adminPassword === 'admin2027' ? '<span style="color:#C0392B;font-size:0.75rem;font-weight:700;">⚠️ غيرها فوراً!</span>' : '<span style="color:#27AE60;font-size:0.75rem;">✅ مخصصة</span>'}
-        </div>
-        <div style="font-size:0.85rem;color:#7A5A00;margin:8px 0 6px;font-weight:700;">أكواد المهندسين (4 أرقام):</div>`;
-    const engIds = Object.keys(ENGINEERS);
-    if (engIds.length === 0) {
-        html += '<div style="color:#999;font-size:0.85rem;padding:8px;">أضف مهندسين أولاً من القسم أدناه، ثم ارجع هنا لتعيين أكوادهم.</div>';
-    } else {
-        engIds.forEach(id => {
-            const e = ENGINEERS[id];
+        </div>`;
+
+    const engIds = Object.keys(ENGINEERS).filter(k => (ENGINEERS[k].role || 'engineer') === 'engineer');
+    const foremenIds = Object.keys(ENGINEERS).filter(k => ENGINEERS[k].role === 'foreman');
+
+    // Engineers section
+    html += `<div style="font-size:0.9rem;color:#7A5A00;margin:12px 0 6px;font-weight:700;">👷 المهندسون (${engIds.length}):</div>`;
+    engIds.forEach(id => {
+        const e = ENGINEERS[id];
+        const pin = AUTH.enginePins[id] || '';
+        html += `<div class="admin-row">
+            <div class="name">${e.ar || e.en || id}</div>
+            <input type="text" id="pin-${id}" value="${pin}" maxlength="6" placeholder="4 أرقام" inputmode="numeric">
+            <button onclick="setEnginePin('${id}')">💾 حفظ الكود</button>
+            ${pin ? `<span style="color:#27AE60;font-size:0.75rem;">✅ مفعّل</span>` : `<span style="color:#C0392B;font-size:0.75rem;">⚠️ غير مفعّل</span>`}
+        </div>`;
+    });
+
+    // Foremen section
+    if (foremenIds.length > 0) {
+        html += `<div style="font-size:0.9rem;color:#7A5A00;margin:14px 0 6px;font-weight:700;">👨‍🔧 الفورمان (${foremenIds.length}) — عيّن كل واحد لمهندس:</div>`;
+        foremenIds.forEach(id => {
+            const f = ENGINEERS[id];
             const pin = AUTH.enginePins[id] || '';
-            html += `<div class="admin-row">
-                <div class="name">${e.ar || e.en || id}</div>
-                <input type="text" id="pin-${id}" value="${pin}" maxlength="6" placeholder="4 أرقام" inputmode="numeric">
-                <button onclick="setEnginePin('${id}')">💾 حفظ</button>
-                ${pin ? `<span style="color:#27AE60;font-size:0.75rem;">✅ مفعّل</span>` : `<span style="color:#C0392B;font-size:0.75rem;">⚠️ غير مفعّل</span>`}
+            const currentParent = f.parent || '';
+            const parentName = currentParent && ENGINEERS[currentParent] ? (ENGINEERS[currentParent].ar || ENGINEERS[currentParent].en) : 'غير معيّن';
+            html += `<div class="admin-row" style="flex-direction:column;align-items:stretch;gap:6px;">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <div class="name">${f.ar || f.en || id}</div>
+                    <span style="font-size:0.72rem;color:#666;">↳ حالياً: <strong>${escapeHtml(parentName)}</strong></span>
+                </div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                    <select id="parent-${id}" style="flex:1;min-width:140px;padding:6px 9px;border:1px solid #D4A017;border-radius:5px;font-family:inherit;font-size:0.85rem;">
+                        <option value="">-- بدون مهندس --</option>
+                        ${engIds.map(eId => `<option value="${eId}" ${currentParent===eId?'selected':''}>${ENGINEERS[eId].ar || ENGINEERS[eId].en}</option>`).join('')}
+                    </select>
+                    <input type="text" id="pin-${id}" value="${pin}" maxlength="6" placeholder="كود" inputmode="numeric" style="width:85px;">
+                    <button onclick="setForemanParent('${id}')" style="background:#8E44AD;">🔗 ربط</button>
+                    <button onclick="setEnginePin('${id}')">💾 الكود</button>
+                </div>
             </div>`;
         });
     }
+
     html += `</div>`;
     return html;
+}
+
+function setForemanParent(fId) {
+    const newParent = document.getElementById('parent-'+fId).value;
+    if (!ENGINEERS[fId]) return;
+    ENGINEERS[fId].parent = newParent || null;
+    saveEngineers();
+    const parentName = newParent && ENGINEERS[newParent] ? (ENGINEERS[newParent].ar || ENGINEERS[newParent].en) : 'بدون مهندس';
+    auditLog('edit', '', `ربط ${ENGINEERS[fId].ar} بـ ${parentName}`);
+    alert('✅ تم الربط: ' + ENGINEERS[fId].ar + ' ↳ ' + parentName);
+    renderEngineers();
 }
 
 function changeAdminPassword() {
