@@ -453,8 +453,20 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper{direction:ltr !importan
         </div>
         <div class="result-count" id="resultCount"></div>
     </div>
+    <div id="bulkActionBar" style="display:none;background:linear-gradient(135deg,#2D6A4F,#1B4332);color:white;padding:10px 14px;border-radius:10px;margin-bottom:10px;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 4px 12px rgba(27,67,50,0.25);">
+        <span style="font-weight:700;">✅ <span id="bulkCount">0</span> محور محدد</span>
+        <span style="color:#AAA;">|</span>
+        <label style="font-weight:600;">تعيين إلى:</label>
+        <select id="bulkEngineerSelect" style="padding:6px 10px;border:none;border-radius:6px;font-family:inherit;font-size:0.88rem;color:#1B4332;min-width:140px;">
+            <option value="">-- اختر مهندس --</option>
+            <option value="__UNASSIGN__">🚫 إلغاء التعيين</option>
+        </select>
+        <button onclick="bulkAssign()" style="background:#D4A017;color:white;border:none;padding:7px 16px;border-radius:7px;cursor:pointer;font-family:inherit;font-weight:700;font-size:0.88rem;">✅ تطبيق</button>
+        <button onclick="clearBulkSelection()" style="background:transparent;color:white;border:1px solid white;padding:6px 14px;border-radius:7px;cursor:pointer;font-family:inherit;font-weight:600;font-size:0.85rem;">إلغاء التحديد</button>
+    </div>
     <div class="table-wrapper"><table>
         <thead><tr>
+            <th><input type="checkbox" id="selectAllPivots" onclick="toggleSelectAll(this)" title="تحديد الكل"></th>
             <th>#</th><th data-ar="المرحلة" data-en="Phase">المرحلة</th>
             <th data-ar="المحور" data-en="Pivot">المحور</th><th data-ar="البئر" data-en="Well">البئر</th>
             <th data-ar="المساحة" data-en="Area">المساحة</th><th data-ar="المهندس" data-en="Engineer">المهندس</th>
@@ -740,7 +752,8 @@ function renderTable() {
             'harvested':`<span class="status-dot harvested"></span>${L('harvested')}`,
         };
         return `
-            <tr onclick="openModal('${r.pivot}')">
+            <tr onclick="if(event.target.tagName!=='INPUT')openModal('${r.pivot}')">
+                <td onclick="event.stopPropagation()"><input type="checkbox" class="pivot-select" data-pivot="${r.pivot}" onchange="updateBulkBar()"></td>
                 <td>${i+1}</td>
                 <td><span class="phase-badge ${r.phase}">${r.phase}</span></td>
                 <td><span class="pivot-name">${r.pivot}</span></td>
@@ -2791,6 +2804,65 @@ function closeMapFS() {
 }
 
 function renderAll() { renderKPIs(); renderTable(); }
+
+// ═══ BULK PIVOT ASSIGNMENT ═══
+function toggleSelectAll(cb) {
+    document.querySelectorAll('.pivot-select').forEach(el => el.checked = cb.checked);
+    updateBulkBar();
+}
+
+function updateBulkBar() {
+    const selected = document.querySelectorAll('.pivot-select:checked');
+    const bar = document.getElementById('bulkActionBar');
+    const countEl = document.getElementById('bulkCount');
+    if (!bar) return;
+    if (selected.length > 0) {
+        bar.style.display = 'flex';
+        countEl.textContent = selected.length;
+        // Populate engineer dropdown
+        const sel = document.getElementById('bulkEngineerSelect');
+        const current = sel.value;
+        sel.innerHTML = '<option value="">-- اختر مهندس --</option><option value="__UNASSIGN__">🚫 إلغاء التعيين</option>';
+        Object.keys(ENGINEERS).forEach(id => {
+            const e = ENGINEERS[id];
+            sel.innerHTML += `<option value="${id}" ${current===id?'selected':''}>${e.ar || e.en || id}</option>`;
+        });
+    } else {
+        bar.style.display = 'none';
+    }
+}
+
+function clearBulkSelection() {
+    document.querySelectorAll('.pivot-select').forEach(el => el.checked = false);
+    const sa = document.getElementById('selectAllPivots');
+    if (sa) sa.checked = false;
+    updateBulkBar();
+}
+
+function bulkAssign() {
+    const selected = Array.from(document.querySelectorAll('.pivot-select:checked')).map(el => el.dataset.pivot);
+    if (!selected.length) { alert('⚠️ لم تحدد محاور'); return; }
+    const engineerId = document.getElementById('bulkEngineerSelect').value;
+    if (!engineerId) { alert('⚠️ اختر مهندس من القائمة'); return; }
+
+    const isUnassign = engineerId === '__UNASSIGN__';
+    const engName = isUnassign ? 'غير معين' : (ENGINEERS[engineerId]?.ar || ENGINEERS[engineerId]?.en || engineerId);
+
+    if (!confirm(`${isUnassign ? '🚫 إلغاء تعيين' : '👷 تعيين'} ${selected.length} محور ${isUnassign ? '' : 'للمهندس: ' + engName}؟`)) return;
+
+    selected.forEach(pivot => {
+        if (isUnassign) {
+            delete ASSIGNMENTS[pivot];
+        } else {
+            ASSIGNMENTS[pivot] = engineerId;
+        }
+    });
+    saveAssignments();
+    auditLog('edit', '', `${isUnassign ? 'إلغاء تعيين' : 'تعيين'} ${selected.length} محور ${isUnassign ? '' : 'للمهندس ' + engName}`);
+    clearBulkSelection();
+    renderAll();
+    alert(`✅ تم ${isUnassign ? 'إلغاء تعيين' : 'تعيين'} ${selected.length} محور بنجاح`);
+}
 
 // ═══ AUTHENTICATION & AUDIT ═══
 const AUTH_KEY = 'wheat2027_v4_auth';
