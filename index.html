@@ -685,24 +685,28 @@ function toggleLang() {
     applyLang();
 }
 
+const SUPPRESSED_KEY = 'wheat2027_suppressed_defaults';
+let SUPPRESSED_DEFAULTS = [];
+
 function loadTracking() {
     try { TRACKING = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e) { TRACKING = {}; }
     try { ASSIGNMENTS = JSON.parse(localStorage.getItem(ASSIGN_KEY) || '{}'); } catch(e) { ASSIGNMENTS = {}; }
     try { ENGINEERS = JSON.parse(localStorage.getItem(ENGINEERS_KEY) || '{}'); } catch(e) { ENGINEERS = {}; }
+    try { SUPPRESSED_DEFAULTS = JSON.parse(localStorage.getItem(SUPPRESSED_KEY) || '[]'); } catch(e) { SUPPRESSED_DEFAULTS = []; }
     // Merge hardcoded defaults (so engineers are synced across all devices)
     Object.keys(DEFAULT_ENGINEERS).forEach(k => {
+        if (SUPPRESSED_DEFAULTS.includes(k)) return;  // user deleted this default
         const def = DEFAULT_ENGINEERS[k];
         if (!ENGINEERS[k]) {
             ENGINEERS[k] = {...def};
         } else {
-            // Merge: defaults provide base, local keeps overrides EXCEPT for parent (foreman→engineer link always from default unless user has set it to a different engineer explicitly)
             const local = ENGINEERS[k];
             ENGINEERS[k] = {...def, ...local};
-            // If local parent is null/empty but default has one, use default
             if (!local.parent && def.parent) ENGINEERS[k].parent = def.parent;
         }
     });
 }
+function saveSuppressed() { try { localStorage.setItem(SUPPRESSED_KEY, JSON.stringify(SUPPRESSED_DEFAULTS)); } catch(e){} }
 function saveTracking() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(TRACKING)); } catch(e) { alert('⚠️ Storage full'); }
 }
@@ -938,25 +942,62 @@ function editEngineer(key) {
     if (nameEn === null) return;
     const zone = prompt(LANG==='ar'?'المنطقة:':'Zone:', info.zone);
     if (zone === null) return;
-    ENGINEERS[key] = { ...info, ar: nameAr.trim() || info.ar, en: nameEn.trim() || info.en, zone: zone.trim() || info.zone };
+    const currentRole = info.role || 'engineer';
+    const roleChoice = prompt(`النوع (1 = مهندس, 2 = فورمان):\nالحالي: ${currentRole==='engineer'?'1 (مهندس)':'2 (فورمان)'}`, currentRole==='engineer'?'1':'2');
+    if (roleChoice === null) return;
+    const newRole = roleChoice.trim() === '2' ? 'foreman' : 'engineer';
+    ENGINEERS[key] = {
+        ...info,
+        ar: nameAr.trim() || info.ar,
+        en: nameEn.trim() || info.en,
+        zone: zone.trim() || info.zone,
+        role: newRole,
+        // Clear parent if promoting to engineer
+        parent: newRole === 'engineer' ? null : info.parent
+    };
     saveEngineers();
+    auditLog('edit', '', `تعديل ${newRole==='foreman'?'فورمان':'مهندس'}: ${nameAr}`);
     renderEngineers();
     renderAll();
 }
 
 function deleteEngineer(key) {
+    if (!isAdmin()) { alert('⚠️ المسؤول فقط يقدر يحذف'); return; }
     const info = ENGINEERS[key];
     if (!info) return;
     const assignedCount = Object.values(ASSIGNMENTS).filter(v => v === key).length;
-    const msg = assignedCount > 0 
-        ? `${LANG==='ar'?'سيصبح':'This will unassign'} ${assignedCount} ${LANG==='ar'?'محور بدون تعيين. حذف':'pivots. Delete'} "${info.ar}"?`
-        : `${LANG==='ar'?'حذف':'Delete'} "${info.ar}"?`;
+    // If this foreman is a default, check also if it has children foremen (shouldn't block but warn)
+    const isDefault = !!DEFAULT_ENGINEERS[key];
+    const childForemen = Object.keys(ENGINEERS).filter(k => ENGINEERS[k].parent === key);
+    let msg = `حذف "${info.ar}"؟`;
+    if (assignedCount > 0) msg += `\n⚠️ سيصبح ${assignedCount} محور بدون تعيين`;
+    if (childForemen.length > 0) msg += `\n⚠️ ${childForemen.length} فورمان مرتبطين به سيصبحوا بدون مهندس`;
+    if (isDefault) msg += `\n\nℹ️ هذا مستخدم افتراضي — الحذف نهائي ولن يعود مع التحديث.`;
     if (!confirm(msg)) return;
-    // Unassign pivots
+
     Object.keys(ASSIGNMENTS).forEach(p => { if (ASSIGNMENTS[p] === key) delete ASSIGNMENTS[p]; });
+    childForemen.forEach(cId => { if (ENGINEERS[cId]) ENGINEERS[cId].parent = null; });
     delete ENGINEERS[key];
+    if (isDefault && !SUPPRESSED_DEFAULTS.includes(key)) {
+        SUPPRESSED_DEFAULTS.push(key);
+        saveSuppressed();
+    }
     saveEngineers();
     saveAssignments();
+    auditLog('delete', '', `حذف ${info.role==='foreman'?'فورمان':'مهندس'}: ${info.ar}`);
+    renderEngineers();
+    renderAll();
+}
+
+function restoreDefaults() {
+    if (!isAdmin()) return;
+    if (SUPPRESSED_DEFAULTS.length === 0) { alert('ℹ️ لا يوجد مستخدمون محذوفون للاسترجاع'); return; }
+    if (!confirm(`استرجاع ${SUPPRESSED_DEFAULTS.length} مستخدم محذوف؟`)) return;
+    SUPPRESSED_DEFAULTS = [];
+    saveSuppressed();
+    loadTracking();
+    auditLog('edit', '', `استرجاع المستخدمين الافتراضيين`);
+    alert('✅ تم الاسترجاع');
     renderEngineers();
     renderAll();
 }
@@ -3135,6 +3176,14 @@ function renderAdminPanel() {
                 </div>
             </div>`;
         });
+    }
+
+    // Restore button if there are suppressed
+    if (SUPPRESSED_DEFAULTS.length > 0) {
+        html += `<div class="admin-row" style="background:#FFF3CD;margin-top:12px;">
+            <div class="name" style="color:#7A5A00;">♻️ محذوفون: ${SUPPRESSED_DEFAULTS.length}</div>
+            <button onclick="restoreDefaults()" style="background:#27AE60;">♻️ استرجاع الكل</button>
+        </div>`;
     }
 
     html += `</div>`;
