@@ -1592,42 +1592,162 @@ function renderNotesList() {
         }).join('');
 }
 
-function uploadImages(e) {
-    const files = Array.from(e.target.files);
-    const t = getPivotData(currentPivot);
-    const s = sign();
-    let processed = 0;
-    files.forEach(file => {
+// ═══ GOOGLE DRIVE UPLOAD ═══
+const DRIVE_UPLOAD_URL = 'https://script.google.com/macros/s/AKfycbw0Kn0HTHHtiaW2W02jIV_x8Q9J1gIDCEIdU0ByQUN9s09-diHaWi8Iw2Iz8l3aArpL6A/exec';
+
+function showUploadProgress(text) {
+    let el = document.getElementById('uploadProgressBox');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'uploadProgressBox';
+        el.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(135deg,#1B4332,#2D6A4F);color:white;padding:20px 30px;border-radius:12px;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,0.3);text-align:center;font-weight:700;min-width:250px;';
+        document.body.appendChild(el);
+    }
+    el.innerHTML = text;
+}
+
+function hideUploadProgress() {
+    const el = document.getElementById('uploadProgressBox');
+    if (el) el.remove();
+}
+
+async function uploadFileToDrive(file, pivotName) {
+    return new Promise((resolve, reject) => {
         const r = new FileReader();
-        r.onload = ev => {
-            t.images.push({ data: ev.target.result, name: file.name, date: new Date().toISOString(), by: s.by, byName: s.byName });
-            processed++;
-            if (processed === files.length) {
-                t.updated = new Date().toISOString();
-                saveTracking();
-                auditLog('add', currentPivot, `${files.length} صور`);
-                renderMedia();
-            }
+        r.onload = async ev => {
+            try {
+                const engName = (CURRENT_USER?.name || 'عام').replace(/[^\w؀-ۿ]/g,'_');
+                const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
+                const ts = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+                const fileName = `${pivotName}_${ts}.${ext}`;
+                const resp = await fetch(DRIVE_UPLOAD_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        fileData: ev.target.result,
+                        mimeType: file.type || 'application/octet-stream',
+                        fileName: fileName,
+                        engineer: engName
+                    }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                });
+                const result = await resp.json();
+                if (result.success) resolve(result);
+                else reject(new Error(result.error || 'Upload failed'));
+            } catch(err) { reject(err); }
         };
+        r.onerror = () => reject(r.error);
         r.readAsDataURL(file);
     });
+}
+
+async function uploadImages(e) {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    const t = getPivotData(currentPivot);
+    const s = sign();
+    let ok = 0, fail = 0;
+
+    for (let i = 0; i < files.length; i++) {
+        showUploadProgress(`☁️ رفع إلى درايف...<br><small>${i+1} من ${files.length}</small>`);
+        try {
+            const result = await uploadFileToDrive(files[i], currentPivot);
+            t.images.push({
+                fileId: result.fileId,
+                fileUrl: result.fileUrl,
+                thumbnailUrl: result.thumbnailUrl,
+                viewUrl: result.viewUrl,
+                name: result.fileName,
+                origName: files[i].name,
+                date: new Date().toISOString(),
+                by: s.by, byName: s.byName,
+                storage: 'drive'
+            });
+            ok++;
+        } catch(err) {
+            console.error('Drive upload failed, falling back to local:', err);
+            // Fallback to local storage
+            await new Promise(res => {
+                const r = new FileReader();
+                r.onload = ev => {
+                    t.images.push({ data: ev.target.result, name: files[i].name, date: new Date().toISOString(), by: s.by, byName: s.byName, storage: 'local' });
+                    res();
+                };
+                r.readAsDataURL(files[i]);
+            });
+            fail++;
+        }
+    }
+
+    hideUploadProgress();
+    t.updated = new Date().toISOString();
+    saveTracking();
+    auditLog('add', currentPivot, `${ok} صور للدرايف${fail?' + '+fail+' محلي':''}`);
+    if (fail > 0) alert(`✅ ${ok} رفعت للدرايف\n⚠️ ${fail} فشلت ورجعت للتخزين المحلي`);
+    renderMedia();
     e.target.value = '';
 }
-function uploadVideo(e) {
+
+async function uploadVideo(e) {
     const file = e.target.files[0]; if (!file) return;
-    if (file.size > 50*1024*1024 && !confirm(L('toolLarge'))) { e.target.value=''; return; }
-    const r = new FileReader();
-    r.onload = ev => {
-        const t = getPivotData(currentPivot);
-        t.videos.push({ data: ev.target.result, name: file.name, date: new Date().toISOString() });
-        t.updated = new Date().toISOString();
-        saveTracking(); renderMedia();
-    };
-    r.readAsDataURL(file);
+    if (file.size > 50*1024*1024) {
+        if (!confirm(`الفيديو حجمه ${(file.size/1024/1024).toFixed(1)} ميجا. قد يستغرق وقتاً. متابعة؟`)) { e.target.value=''; return; }
+    }
+    const t = getPivotData(currentPivot);
+    const s = sign();
+    showUploadProgress(`☁️ رفع فيديو للدرايف...<br><small>${(file.size/1024/1024).toFixed(1)} ميجا</small>`);
+    try {
+        const result = await uploadFileToDrive(file, currentPivot);
+        t.videos.push({
+            fileId: result.fileId,
+            fileUrl: result.fileUrl,
+            thumbnailUrl: result.thumbnailUrl,
+            viewUrl: result.viewUrl,
+            name: result.fileName,
+            origName: file.name,
+            date: new Date().toISOString(),
+            by: s.by, byName: s.byName,
+            storage: 'drive'
+        });
+        auditLog('add', currentPivot, `فيديو للدرايف: ${file.name}`);
+    } catch(err) {
+        console.error('Drive upload failed:', err);
+        alert('❌ فشل رفع الفيديو للدرايف: ' + err.message + '\nسيتم حفظه محلياً كاحتياط');
+        await new Promise(res => {
+            const r = new FileReader();
+            r.onload = ev => {
+                t.videos.push({ data: ev.target.result, name: file.name, date: new Date().toISOString(), by: s.by, byName: s.byName, storage: 'local' });
+                res();
+            };
+            r.readAsDataURL(file);
+        });
+    }
+    hideUploadProgress();
+    t.updated = new Date().toISOString();
+    saveTracking();
+    renderMedia();
     e.target.value = '';
 }
-function deleteImage(i) { if (!confirm(L('delete'))) return; const t = getPivotData(currentPivot); t.images.splice(i,1); t.updated=new Date().toISOString(); saveTracking(); renderMedia(); }
-function deleteVideo(i) { if (!confirm(L('delete'))) return; const t = getPivotData(currentPivot); t.videos.splice(i,1); t.updated=new Date().toISOString(); saveTracking(); renderMedia(); }
+
+function deleteImage(i) {
+    if (!confirm(L('delete') + '\n(سيبقى في درايفك — احذفه من هناك يدوياً إذا رغبت)')) return;
+    const t = getPivotData(currentPivot);
+    const img = t.images[i];
+    t.images.splice(i,1);
+    t.updated=new Date().toISOString();
+    saveTracking();
+    auditLog('delete', currentPivot, `حذف صورة من المرجع${img?.fileUrl?' (تبقى في الدرايف)':''}`);
+    renderMedia();
+}
+function deleteVideo(i) {
+    if (!confirm(L('delete') + '\n(سيبقى في درايفك — احذفه من هناك يدوياً إذا رغبت)')) return;
+    const t = getPivotData(currentPivot);
+    const v = t.videos[i];
+    t.videos.splice(i,1);
+    t.updated=new Date().toISOString();
+    saveTracking();
+    auditLog('delete', currentPivot, `حذف فيديو من المرجع${v?.fileUrl?' (يبقى في الدرايف)':''}`);
+    renderMedia();
+}
 function renderMedia() {
     const t = getPivotData(currentPivot);
     const section = document.getElementById('mediaSection');
@@ -1635,11 +1755,53 @@ function renderMedia() {
     let html = '';
     if (t.images.length) {
         html += `<div class="section-title" style="margin-top:12px;">📷 ${LANG==='ar'?'الصور':'Photos'} (${t.images.length})</div>`;
-        html += `<div class="media-grid">${t.images.map((img, i) => `<div class="media-item"><button class="mdel" onclick="deleteImage(${i})">✕</button><img src="${img.data}" onclick="viewMedia('img','${img.data.replace(/'/g,"&#39;")}')"></div>`).join('')}</div>`;
+        html += `<div class="media-grid">${t.images.map((img, i) => {
+            const thumbSrc = img.thumbnailUrl || img.data || '';
+            const fullUrl = img.fileUrl || img.data || '';
+            const storageLabel = img.storage === 'drive' ? '<span style="position:absolute;top:2px;left:2px;background:#27AE60;color:white;padding:1px 5px;border-radius:7px;font-size:0.6rem;font-weight:700;">☁️</span>' : '';
+            const byLabel = img.byName ? `<div style="font-size:0.62rem;color:#555;text-align:center;padding:2px;">${escapeHtml(img.byName)}</div>` : '';
+            if (img.storage === 'drive' && img.fileUrl) {
+                return `<div class="media-item" style="position:relative;">
+                    <button class="mdel" onclick="deleteImage(${i})">✕</button>
+                    ${storageLabel}
+                    <a href="${fullUrl}" target="_blank"><img src="${thumbSrc}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><rect fill=%22%23ddd%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%23555%22 font-size=%2240%22>📷</text></svg>';"></a>
+                    ${byLabel}
+                </div>`;
+            }
+            return `<div class="media-item" style="position:relative;">
+                <button class="mdel" onclick="deleteImage(${i})">✕</button>
+                <span style="position:absolute;top:2px;left:2px;background:#D4A017;color:white;padding:1px 5px;border-radius:7px;font-size:0.6rem;font-weight:700;">💾</span>
+                <img src="${thumbSrc}" onclick="viewMedia('img','${(thumbSrc).replace(/'/g,'&#39;')}')">
+                ${byLabel}
+            </div>`;
+        }).join('')}</div>`;
     }
     if (t.videos.length) {
         html += `<div class="section-title" style="margin-top:12px;">🎥 ${LANG==='ar'?'الفيديوهات':'Videos'} (${t.videos.length})</div>`;
-        html += `<div class="media-grid">${t.videos.map((v, i) => `<div class="media-item"><button class="mdel" onclick="deleteVideo(${i})">✕</button><video src="${v.data}" controls></video></div>`).join('')}</div>`;
+        html += `<div class="media-grid">${t.videos.map((v, i) => {
+            if (v.storage === 'drive' && v.fileUrl) {
+                return `<div class="media-item" style="position:relative;">
+                    <button class="mdel" onclick="deleteVideo(${i})">✕</button>
+                    <span style="position:absolute;top:2px;left:2px;background:#27AE60;color:white;padding:1px 5px;border-radius:7px;font-size:0.6rem;font-weight:700;">☁️</span>
+                    <a href="${v.fileUrl}" target="_blank" style="display:block;padding:20px;text-align:center;background:#000;color:white;border-radius:8px;text-decoration:none;">
+                        🎬<br><small>${escapeHtml(v.origName || 'فيديو')}</small>
+                    </a>
+                    ${v.byName ? `<div style="font-size:0.62rem;color:#555;text-align:center;padding:2px;">${escapeHtml(v.byName)}</div>` : ''}
+                </div>`;
+            }
+            return `<div class="media-item" style="position:relative;">
+                <button class="mdel" onclick="deleteVideo(${i})">✕</button>
+                <span style="position:absolute;top:2px;left:2px;background:#D4A017;color:white;padding:1px 5px;border-radius:7px;font-size:0.6rem;font-weight:700;">💾</span>
+                <video src="${v.data}" controls></video>
+            </div>`;
+        }).join('')}</div>`;
+    }
+    if (t.images.length === 0 && t.videos.length === 0) {
+        html = '';
+    } else {
+        html = `<div style="background:#E8F4FD;padding:7px 10px;border-radius:7px;font-size:0.78rem;color:#1B4F72;margin-top:10px;">
+            ☁️ = محفوظ في درايفك · 💾 = محفوظ محلياً في هذا الجهاز فقط
+        </div>` + html;
     }
     section.innerHTML = html;
 }
