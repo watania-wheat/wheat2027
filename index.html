@@ -808,7 +808,9 @@ function renderKPIs() {
         {label: LANG==='ar'?'📊 المساحة المزروعة':'📊 Planted area', val: plantedArea.toLocaleString()+(LANG==='ar'?' هـ':' ha'), cls:'planted'},
     ];
     if (!EMBEDDED_ENGINEER) {
-        kpis.push({label: LANG==='ar'?'👥 مهندسون':'👥 Engineers', val: Object.keys(ENGINEERS).length, cls:''});
+        const engCount = Object.values(ENGINEERS).filter(e => (e.role||'engineer')==='engineer').length;
+        const frmCount = Object.values(ENGINEERS).filter(e => e.role==='foreman').length;
+        kpis.push({label: LANG==='ar'?`👷 مهندسون / 👨‍🔧 فورمان`:`👷 Eng / 👨‍🔧 Foremen`, val: `${engCount} / ${frmCount}`, cls:''});
     }
     const totalWaMsgs = Object.values(TRACKING).reduce((s,t) => s + ((t.whatsapp||[]).length), 0);
     if (totalWaMsgs > 0) {
@@ -1093,32 +1095,80 @@ function renderEngineers() {
             </div>
         </div>`;
     
-    const engineersList = Object.keys(ENGINEERS).length === 0 
-        ? `<div style="text-align:center;padding:40px;color:#999;font-style:italic;background:#F8FAF9;border-radius:10px;">
+    const renderCard = (key, info, isEngineer) => {
+        const count = counts[key] || 0;
+        const areaSum = DATA.filter(r => ASSIGNMENTS[r.pivot]===key).reduce((s,r)=>s+(r.area||0),0);
+        const color = info.color || '#2D6A4F';
+        const parentName = info.parent && ENGINEERS[info.parent] ? (ENGINEERS[info.parent].ar || ENGINEERS[info.parent].en) : '';
+        const parentTag = !isEngineer && parentName ? ` | ↳ ${LANG==='ar'?'تحت':'under'} ${parentName}` : '';
+        const icon = isEngineer ? '👷' : '👨‍🔧';
+        return `
+            <div class="engineer-card" style="border-right-color:${color} !important;">
+                <div>
+                    <div class="ename">${icon} ${info[LANG]||info.ar}</div>
+                    <div class="ezone">${LANG==='ar'?'المنطقة':'Zone'}: ${info.zone} | ${count} ${LANG==='ar'?'محور':'pivots'} | ${areaSum} ${LANG==='ar'?'هـ':'ha'}${parentTag}</div>
+                </div>
+                <div class="ecount">${count}</div>
+                <button class="btn btn-primary" onclick="viewEngineerPivots('${key}')">${LANG==='ar'?'عرض':'View'}</button>
+                ${isEngineer ? `<button class="btn btn-info" onclick="generateEngineerFile('${key}')">${LANG==='ar'?'📤 ملف':'📤 File'}</button>` : ''}
+                <button class="btn" style="background:#D4A017;" onclick="editEngineer('${key}')">✏️</button>
+                <button class="btn btn-danger" onclick="deleteEngineer('${key}')">🗑️</button>
+            </div>`;
+    };
+
+    const _engIds = Object.keys(ENGINEERS).filter(k => (ENGINEERS[k].role||'engineer')==='engineer');
+    const _frmIds = Object.keys(ENGINEERS).filter(k => ENGINEERS[k].role==='foreman');
+
+    let engineersList = '';
+    if (Object.keys(ENGINEERS).length === 0) {
+        engineersList = `<div style="text-align:center;padding:40px;color:#999;font-style:italic;background:#F8FAF9;border-radius:10px;">
             ${LANG==='ar' ? '📭 لا يوجد مهندسون بعد — أضف أول مهندس أعلاه' : '📭 No engineers yet — add the first engineer above'}
-          </div>`
-        : Object.entries(ENGINEERS).map(([key, info]) => {
-            const count = counts[key] || 0;
-            const areaSum = DATA.filter(r => ASSIGNMENTS[r.pivot]===key).reduce((s,r)=>s+(r.area||0),0);
-            const color = info.color || '#2D6A4F';
-            return `
-                <div class="engineer-card" style="border-right-color:${color} !important;">
-                    <div>
-                        <div class="ename">${info[LANG]||info.ar}</div>
-                        <div class="ezone">${LANG==='ar'?'المنطقة':'Zone'}: ${info.zone} | ${count} ${LANG==='ar'?'محور':'pivots'} | ${areaSum} ${LANG==='ar'?'هـ':'ha'}</div>
-                    </div>
-                    <div class="ecount">${count}</div>
-                    <button class="btn btn-primary" onclick="viewEngineerPivots('${key}')">${LANG==='ar'?'عرض':'View'}</button>
-                    <button class="btn btn-info" onclick="generateEngineerFile('${key}')">${LANG==='ar'?'📤 ملف':'📤 File'}</button>
-                    <button class="btn" style="background:#D4A017;" onclick="editEngineer('${key}')">✏️</button>
-                    <button class="btn btn-danger" onclick="deleteEngineer('${key}')">🗑️</button>
-                </div>`;
-        }).join('');
-    
+          </div>`;
+    } else {
+        // Engineers section
+        if (_engIds.length > 0) {
+            engineersList += `<div style="display:flex;align-items:center;gap:8px;margin:14px 0 8px;padding:8px 12px;background:linear-gradient(90deg,var(--wtn-green-dark),var(--wtn-green));color:white;border-radius:8px;">
+                <span style="font-size:1.2rem;">👷</span>
+                <strong style="font-size:1rem;font-family:'Cairo','Tajawal',sans-serif;">المهندسون (${_engIds.length})</strong>
+            </div>`;
+            engineersList += _engIds.map(k => renderCard(k, ENGINEERS[k], true)).join('');
+        }
+        // Foremen section
+        if (_frmIds.length > 0) {
+            engineersList += `<div style="display:flex;align-items:center;gap:8px;margin:18px 0 8px;padding:8px 12px;background:linear-gradient(90deg,#8E44AD,#6C3483);color:white;border-radius:8px;">
+                <span style="font-size:1.2rem;">👨‍🔧</span>
+                <strong style="font-size:1rem;font-family:'Cairo','Tajawal',sans-serif;">الفورمان (${_frmIds.length})</strong>
+            </div>`;
+            // Group foremen by parent engineer
+            const foremenByParent = {};
+            const orphans = [];
+            _frmIds.forEach(fId => {
+                const p = ENGINEERS[fId].parent;
+                if (p && ENGINEERS[p]) {
+                    if (!foremenByParent[p]) foremenByParent[p] = [];
+                    foremenByParent[p].push(fId);
+                } else {
+                    orphans.push(fId);
+                }
+            });
+            _engIds.forEach(eId => {
+                const fIds = foremenByParent[eId];
+                if (fIds && fIds.length > 0) {
+                    engineersList += `<div style="margin:6px 0 4px;padding:5px 10px;background:#F0F5F2;border-radius:6px;font-size:0.82rem;color:var(--wtn-green-dark);font-weight:600;">↳ تحت ${ENGINEERS[eId].ar || ENGINEERS[eId].en}</div>`;
+                    engineersList += fIds.map(k => renderCard(k, ENGINEERS[k], false)).join('');
+                }
+            });
+            if (orphans.length > 0) {
+                engineersList += `<div style="margin:6px 0 4px;padding:5px 10px;background:#FFF3CD;border-radius:6px;font-size:0.82rem;color:#7A5A00;font-weight:600;">⚠️ بدون مهندس مسؤول</div>`;
+                engineersList += orphans.map(k => renderCard(k, ENGINEERS[k], false)).join('');
+            }
+        }
+    }
+
     ep.innerHTML = adminHtml + addForm + engineersList + `
         <div style="margin-top:16px;padding:12px;background:#F8FAF9;border-radius:8px;font-size:0.85rem;color:#555;">
             <strong style="color:#1B4332;">${LANG==='ar'?'ملاحظة:':'Note:'}</strong>
-            ${LANG==='ar' ? 'أضف المهندسين أولاً، ثم افتح أي محور من الجدول الرئيسي واختر المهندس المسؤول عنه.' : 'Add engineers first, then open any pivot from the main table and select the responsible engineer.'}
+            ${LANG==='ar' ? 'المهندسون بالأخضر والفورمان بالبنفسجي. كل فورمان يظهر تحت مهندسه المسؤول.' : 'Engineers in green, foremen in purple. Each foreman appears under their responsible engineer.'}
         </div>`;
 }
 
