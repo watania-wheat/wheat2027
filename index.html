@@ -3921,19 +3921,31 @@ function toast(message, type = 'success', duration = 3200) {
 }
 
 // ═══ Weather Forecast ═══
-const WEATHER_DEFAULT = { lat: 26.326, lon: 43.975, name: 'بريدة، القصيم', source: 'default' };
+// Farm location — Basaita (بسيطاء) in the Al-Jouf region, where the wheat project sits
+const WEATHER_DEFAULT = { lat: 30.362, lon: 39.463, name: 'بسيطاء، الجوف', source: 'farm' };
 const WEATHER_LOC_KEY = 'wheat2027_weather_location';
 let WEATHER_LOCATION = WEATHER_DEFAULT;
 let WEATHER_DATA = null;
 let WEATHER_FETCHED_AT = null;
 let WEATHER_LOC_RESOLVING = false;
 
-// Load any previously-resolved location so we skip the geolocation prompt on later loads
+// Load any previously-saved user override. We drop stale geolocation values from older builds
+// (before the farm default was set) so Basaita becomes the location on next load.
 try {
     const saved = localStorage.getItem(WEATHER_LOC_KEY);
     if (saved) {
         const p = JSON.parse(saved);
-        if (p && typeof p.lat === 'number' && typeof p.lon === 'number' && p.name) WEATHER_LOCATION = p;
+        const migrated = localStorage.getItem('wheat2027_weather_loc_farm_default_applied');
+        if (!migrated) {
+            // One-time migration: clear any geolocation cache from older versions
+            localStorage.removeItem(WEATHER_LOC_KEY);
+            localStorage.setItem('wheat2027_weather_loc_farm_default_applied', '1');
+        } else if (p && typeof p.lat === 'number' && typeof p.lon === 'number' && p.name && p.source === 'geolocation-user-chosen') {
+            // Only honor an explicit post-migration override
+            WEATHER_LOCATION = p;
+        }
+    } else {
+        localStorage.setItem('wheat2027_weather_loc_farm_default_applied', '1');
     }
 } catch(e){}
 
@@ -3964,7 +3976,7 @@ async function resolveWeatherLocation() {
                 }
             }
         } catch(e){}
-        const loc = { lat, lon, name, source: 'geolocation', resolvedAt: new Date().toISOString() };
+        const loc = { lat, lon, name, source: 'geolocation-user-chosen', resolvedAt: new Date().toISOString() };
         // Only update if the new location differs meaningfully (>0.05° ≈ 5km)
         const changed = !WEATHER_LOCATION || Math.abs(WEATHER_LOCATION.lat - lat) > 0.05 || Math.abs(WEATHER_LOCATION.lon - lon) > 0.05;
         WEATHER_LOCATION = loc;
@@ -3979,26 +3991,26 @@ async function resolveWeatherLocation() {
     }
 }
 
-// Kick off the resolution shortly after load — non-blocking
-setTimeout(() => {
-    resolveWeatherLocation().then(loc => {
-        if (loc && loc.source === 'geolocation') {
-            // Refresh header + weather panel if visible
-            try { updateHeaderWeather(); } catch(e){}
-            if (document.getElementById('panel6')?.classList.contains('active')) {
-                try { renderWeather(); } catch(e){}
-            }
-        }
-    });
-}, 1500);
+// No auto-geolocation prompt: weather defaults to the farm location (Basaita).
+// The user can switch to their own location via the "📍 استخدم موقعي" button in the Weather tab.
 
-// Manual re-trigger for geolocation (used when the first attempt was denied or timed out)
+// Reset back to the farm (default) location
+function resetWeatherToFarm() {
+    WEATHER_LOCATION = { ...WEATHER_DEFAULT };
+    try { localStorage.removeItem(WEATHER_LOC_KEY); } catch(e){}
+    WEATHER_DATA = null; WEATHER_FETCHED_AT = null;
+    try { updateHeaderWeather(); } catch(e){}
+    renderWeather();
+    toast('🌾 رجعنا لطقس بسيطاء', 'success');
+}
+
+// Manual trigger for geolocation (opt-in — the default is the farm location)
 async function useMyLocationForWeather() {
     if (!navigator.geolocation) { toast('المتصفح ما يدعم تحديد الموقع', 'warn'); return; }
     toast('📍 جاري تحديد موقعك...', 'info', 1800);
     const before = `${WEATHER_LOCATION.lat},${WEATHER_LOCATION.lon}`;
     const loc = await resolveWeatherLocation();
-    if (loc.source === 'geolocation') {
+    if (loc.source === 'geolocation-user-chosen') {
         WEATHER_FETCHED_AT = null;
         try { updateHeaderWeather(); } catch(e){}
         renderWeather();
@@ -4176,8 +4188,10 @@ function drawWeather(data) {
             <div>
                 <h2>الطقس — توقعات 10 أيام</h2>
                 <div class="location">
-                    ${WEATHER_LOCATION.source === 'geolocation' ? '📍 ' : ''}${WEATHER_LOCATION.name} · ${WEATHER_LOCATION.lat.toFixed(2)}°N، ${WEATHER_LOCATION.lon.toFixed(2)}°E
-                    ${WEATHER_LOCATION.source !== 'geolocation' ? '<button onclick="useMyLocationForWeather()" style="background:transparent;border:1px solid var(--wtn-green);color:var(--wtn-green);padding:3px 10px;border-radius:12px;cursor:pointer;font-family:inherit;font-size:0.75rem;font-weight:700;margin-inline-start:8px;">📍 استخدم موقعي</button>' : ''}
+                    ${WEATHER_LOCATION.source === 'geolocation-user-chosen' ? '📍 ' : '🌾 '}${WEATHER_LOCATION.name} · ${WEATHER_LOCATION.lat.toFixed(2)}°N، ${WEATHER_LOCATION.lon.toFixed(2)}°E
+                    ${WEATHER_LOCATION.source !== 'geolocation-user-chosen'
+                        ? '<button onclick="useMyLocationForWeather()" style="background:transparent;border:1px solid var(--wtn-green);color:var(--wtn-green);padding:3px 10px;border-radius:12px;cursor:pointer;font-family:inherit;font-size:0.75rem;font-weight:700;margin-inline-start:8px;">📍 استخدم موقعي</button>'
+                        : '<button onclick="resetWeatherToFarm()" style="background:transparent;border:1px solid var(--wtn-green);color:var(--wtn-green);padding:3px 10px;border-radius:12px;cursor:pointer;font-family:inherit;font-size:0.75rem;font-weight:700;margin-inline-start:8px;">🌾 ارجع لبسيطاء</button>'}
                 </div>
             </div>
             <div style="text-align:end;">
