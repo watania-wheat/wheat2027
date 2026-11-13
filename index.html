@@ -338,6 +338,60 @@ body[dir="ltr"] .alert-item.critical{border-left-color:#C0392B}
 .qa-count.bad{color:#C0392B}
 body[data-role="viewer"] .qa-bar{display:none !important}
 
+/* ═══ Field Faults Log ═══ */
+.tab-faults{background:linear-gradient(135deg,#C0392B,#E67E22);color:white !important;font-weight:800 !important}
+.tab-faults:hover{filter:brightness(1.1)}
+.tab-faults.active{background:linear-gradient(135deg,#D4A017,#B7791F) !important;color:#1B4332 !important}
+.faults-container{background:white;border-radius:14px;padding:24px;box-shadow:0 4px 18px rgba(15,59,46,0.07);border:1px solid var(--wtn-border)}
+.faults-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;padding-bottom:16px;border-bottom:2px solid #E67E22;margin-bottom:20px}
+.faults-head h2{color:var(--wtn-green-dark);font-size:1.5rem;font-weight:800;margin:0;font-family:'Cairo','Tajawal',sans-serif}
+.faults-head .sub{color:var(--wtn-text-soft);font-size:0.88rem;margin-top:5px}
+.btn-add-fault{background:#C0392B;color:white;border:none;padding:10px 22px;border-radius:10px;cursor:pointer;font-family:inherit;font-weight:700;font-size:0.9rem;letter-spacing:0.3px;transition:all 0.15s}
+.btn-add-fault:hover{background:#A93226;transform:translateY(-1px);box-shadow:0 4px 12px rgba(192,57,43,0.3)}
+.faults-stats{display:flex;gap:14px;margin-bottom:22px;flex-wrap:wrap}
+.fs-item{flex:1;min-width:140px;background:#F7FAF8;border:1px solid var(--wtn-border);border-radius:10px;padding:14px;text-align:center;border-top:3px solid #7a8a85}
+.fs-item.open{border-top-color:#C0392B}
+.fs-item.resolved{border-top-color:#27AE60}
+.fs-item.pub{border-top-color:#2874A6}
+.fs-item .val{font-size:1.8rem;font-weight:800;color:var(--wtn-green-dark);line-height:1;font-family:'Cairo','Tajawal',sans-serif}
+.fs-item .lbl{font-size:0.82rem;color:var(--wtn-text-soft);margin-top:6px;font-weight:600}
+.faults-list{display:flex;flex-direction:column;gap:14px}
+.fault-card{background:#FBFCFB;border:1px solid var(--wtn-border);border-inline-start:5px solid #C0392B;border-radius:10px;padding:16px;transition:transform 0.15s}
+.fault-card:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,0.05)}
+.fault-card.resolved{opacity:0.72}
+.fc-head{margin-bottom:10px}
+.fc-title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px}
+.fc-sev{color:white;padding:2px 10px;border-radius:10px;font-size:0.72rem;font-weight:800;letter-spacing:0.3px}
+.fc-title{color:var(--wtn-green-dark);font-size:1.02rem;font-weight:800;margin:0;flex:1}
+.fc-pub-badge{background:#E8F5E9;color:#1E7E34;border:1px solid #A5D6A7;padding:2px 9px;border-radius:10px;font-size:0.72rem;font-weight:700}
+.fc-draft-badge{background:#FFF3CD;color:#B7791F;border:1px solid #F5D77A;padding:2px 9px;border-radius:10px;font-size:0.72rem;font-weight:700}
+.fc-res-badge{background:#E3F2FD;color:#2874A6;border:1px solid #90CAF9;padding:2px 9px;border-radius:10px;font-size:0.72rem;font-weight:700}
+.fc-meta{color:var(--wtn-text-soft);font-size:0.82rem;font-weight:500}
+.fc-body{color:var(--wtn-green-dark);font-size:0.92rem;line-height:1.6;margin:10px 0;background:white;padding:10px 12px;border-radius:7px;border:1px solid var(--wtn-border)}
+.fc-pivots{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px}
+.fc-pvlbl{color:var(--wtn-text-soft);font-size:0.82rem;font-weight:600}
+.fpv{background:var(--wtn-green-pale);color:var(--wtn-green-dark);padding:3px 10px;border-radius:12px;font-weight:700;font-size:0.8rem;font-family:monospace;cursor:pointer}
+.fpv:hover{background:var(--wtn-green-mid);color:white}
+.fc-source{color:var(--wtn-text-soft);font-size:0.78rem;margin-top:8px;font-style:italic}
+.fc-actions{display:flex;gap:6px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--wtn-border);flex-wrap:wrap}
+.fa-btn{background:white;border:1px solid var(--wtn-border);color:var(--wtn-green-dark);padding:6px 12px;border-radius:7px;cursor:pointer;font-family:inherit;font-size:0.8rem;font-weight:700;transition:all 0.12s}
+.fa-btn:hover{background:var(--wtn-green-pale);border-color:var(--wtn-green)}
+.fa-pub{background:#E3F2FD;border-color:#90CAF9;color:#2874A6}
+.fa-pub:hover{background:#2874A6;color:white}
+.fa-res{background:#E8F5E9;border-color:#A5D6A7;color:#1E7E34}
+.fa-res:hover{background:#27AE60;color:white}
+.fa-del{background:#FADBD8;border-color:#F1948A;color:#C0392B}
+.fa-del:hover{background:#C0392B;color:white}
+.faults-empty{text-align:center;padding:50px 20px;color:var(--wtn-text-soft);font-size:1rem;background:#FBFCFB;border-radius:10px;border:1px dashed var(--wtn-border)}
+body[data-role="viewer"] .fc-actions,body[data-role="viewer"] .btn-add-fault{display:none}
+
+/* Pivot modal fault banner */
+.pivot-fault-banner{color:white;border-radius:10px;padding:14px 16px;margin-bottom:14px;box-shadow:0 4px 14px rgba(192,57,43,0.25);animation:pfbPulse 2.4s ease-in-out infinite}
+@keyframes pfbPulse{0%,100%{box-shadow:0 4px 14px rgba(192,57,43,0.25)}50%{box-shadow:0 6px 22px rgba(192,57,43,0.4)}}
+.pfb-head{font-weight:800;font-size:0.96rem;margin-bottom:5px;letter-spacing:0.2px}
+.pfb-body{font-size:0.86rem;line-height:1.5;opacity:0.97}
+.pfb-src{font-size:0.75rem;opacity:0.85;margin-top:6px;font-style:italic}
+
 /* ═══ "What changed since your last visit" banner ═══ */
 #visitDeltaBanner{margin:0 0 12px}
 .vd-banner{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#FFF8E1 0%,#FDF3D0 100%);border:1px solid var(--wtn-gold);border-inline-start:4px solid var(--wtn-gold);border-radius:12px;padding:12px 16px;box-shadow:0 3px 12px rgba(212,160,23,0.15);animation:vdSlide 0.5s cubic-bezier(0.22,1,0.36,1)}
@@ -845,6 +899,7 @@ body[dir="ltr"] .toast{border-right:none;border-left:4px solid var(--wtn-green)}
     <div class="tab" id="plantingProgressTab" onclick="switchTab(7)" data-ar="تقدم الزراعة" data-en="Planting Progress" style="display:none;">تقدم الزراعة</div>
     <div class="tab" onclick="switchTab(8)" data-ar="خطة الري" data-en="Irrigation Plan">خطة الري</div>
     <div class="tab tab-exec" onclick="switchTab(9)" data-ar="اللوحة التنفيذية" data-en="Executive Dashboard">👑 اللوحة التنفيذية</div>
+    <div class="tab tab-faults" id="faultsTab" onclick="switchTab(10)" data-ar="سجل الأعطال" data-en="Faults Log" style="display:none;">⚠️ سجل الأعطال</div>
 </div>
 
 <!-- Panel 0: All Pivots -->
@@ -1020,6 +1075,11 @@ body[dir="ltr"] .toast{border-right:none;border-left:4px solid var(--wtn-green)}
 <!-- Panel 9: Executive Dashboard -->
 <div class="panel" id="panel9">
     <div id="execDashboardPanel"></div>
+</div>
+
+<!-- Panel 10: Field Faults Log (admin-managed, admin can publish per-entry to others) -->
+<div class="panel" id="panel10">
+    <div id="faultsLogPanel"></div>
 </div>
 
 <!-- Modal -->
@@ -1349,6 +1409,7 @@ function syncPayloadLocal() {
         tracking: TRACKING,
         assignments: ASSIGNMENTS,
         engineers: ENGINEERS,
+        faults: FIELD_FAULTS,
         clientTs: new Date().toISOString(),
         clientUser: CURRENT_USER ? { id: CURRENT_USER.id, name: CURRENT_USER.name, role: CURRENT_USER.role } : null
     };
@@ -1381,10 +1442,26 @@ function syncMergeRemote(remote) {
         const remJ = JSON.stringify(remote.engineers);
         if (curJ !== remJ) { ENGINEERS = remote.engineers; changed = true; }
     }
+    // Faults: merge by id, prefer the most recently updated version
+    if (Array.isArray(remote.faults)) {
+        const byId = {};
+        FIELD_FAULTS.forEach(f => { byId[f.id] = f; });
+        remote.faults.forEach(rf => {
+            const lf = byId[rf.id];
+            if (!lf) { byId[rf.id] = rf; changed = true; }
+            else {
+                const rTs = rf.updatedAt ? new Date(rf.updatedAt).getTime() : new Date(rf.ts).getTime();
+                const lTs = lf.updatedAt ? new Date(lf.updatedAt).getTime() : new Date(lf.ts).getTime();
+                if (rTs > lTs) { byId[rf.id] = rf; changed = true; }
+            }
+        });
+        FIELD_FAULTS = Object.values(byId);
+    }
     if (changed) {
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(TRACKING)); } catch(e){}
         try { localStorage.setItem(ASSIGN_KEY, JSON.stringify(ASSIGNMENTS)); } catch(e){}
         try { localStorage.setItem(ENGINEERS_KEY, JSON.stringify(ENGINEERS)); } catch(e){}
+        try { localStorage.setItem(FAULTS_KEY, JSON.stringify(FIELD_FAULTS)); } catch(e){}
     }
     return changed;
 }
@@ -2052,6 +2129,7 @@ function openModal(pivot) {
         </div>`;
     
     document.getElementById('modalBody').innerHTML = `
+        ${faultBadgeForPivot(pivot)}
         ${engineerAssignHtml}
         <div class="info-grid">
             <div class="info-item"><div class="ilabel">${LANG==='ar'?'المحصول السابق':'Previous crop'}</div><div class="ival">${rec.last_crop}</div></div>
@@ -3604,6 +3682,7 @@ function switchTab(idx) {
     if (idx === 7) renderPlantingProgress();
     if (idx === 8) renderIrrigationPlan();
     if (idx === 9) renderExecDashboard();
+    if (idx === 10) renderFaultsLog();
 }
 
 // ═══ Export Executive Dashboard as a shareable PNG ═══
@@ -3655,6 +3734,203 @@ async function exportDashboardImage() {
         console.error('exportDashboardImage failed:', e);
         toast(isAr?'⚠️ تعذّر إنشاء الصورة — حاول مرة ثانية':'⚠️ Failed to generate image','warn');
     }
+}
+
+// ═══ Field Faults Log — admin-curated, selective publishing to other users ═══
+const FAULTS_KEY = 'wheat2027_field_faults';
+let FIELD_FAULTS = [];
+
+// Seed fault derived from WhatsApp maintenance group (10/11 — W22 engine failure)
+const SEED_FAULTS = [
+    {
+        id: 'w22-2026-11-10',
+        ts: '2026-11-10T12:30:00+03:00',
+        well: 'W22', phase: 'Ph3',
+        affectedPivots: ['PH3 B10', 'PH3 C09'],
+        severity: 'high', status: 'open',
+        title: 'توقف ماكينة البئر W22',
+        description: 'الفني أصلح الماكينة لكن الضغط لم يعد للمحاور. تأكيد عملي لصحة توصية خطة 2027 (استبدال الماكينة كاملاً). التوصية السابقة: "ضعف تدفق + RPM 1615 — استبدال كامل".',
+        source: 'مجموعة صيانة الواتساب (10/11)',
+        reporter: 'أبو أسامة',
+        published: false,
+        createdBy: 'system'
+    }
+];
+
+function loadFaults() {
+    try {
+        const raw = localStorage.getItem(FAULTS_KEY);
+        FIELD_FAULTS = raw ? JSON.parse(raw) : [];
+    } catch(e) { FIELD_FAULTS = []; }
+    // Seed on first ever load if nothing exists
+    if (FIELD_FAULTS.length === 0 && !localStorage.getItem(FAULTS_KEY + '_seeded')) {
+        FIELD_FAULTS = [...SEED_FAULTS];
+        try { localStorage.setItem(FAULTS_KEY + '_seeded', '1'); saveFaults(); } catch(e){}
+    }
+}
+function saveFaults() {
+    try { localStorage.setItem(FAULTS_KEY, JSON.stringify(FIELD_FAULTS)); } catch(e){}
+    syncSchedulePush && syncSchedulePush('faults');
+}
+function faultsVisibleToUser() {
+    // Admin sees all, supervisor sees all, everyone else sees published only
+    if (canManage && canManage()) return FIELD_FAULTS;
+    return FIELD_FAULTS.filter(f => f.published);
+}
+function faultsForPivot(pivotId) {
+    return faultsVisibleToUser().filter(f => f.status === 'open' && (f.affectedPivots || []).includes(pivotId));
+}
+function faultsForWell(well) {
+    return faultsVisibleToUser().filter(f => f.status === 'open' && f.well === well);
+}
+
+function updateFaultsTabVisibility() {
+    const tab = document.getElementById('faultsTab');
+    if (!tab) return;
+    // Show tab if admin/supervisor, OR if non-admin and there's at least one published fault
+    const canSee = (canManage && canManage()) || faultsVisibleToUser().length > 0;
+    tab.style.display = canSee ? '' : 'none';
+}
+
+function renderFaultsLog() {
+    const host = document.getElementById('faultsLogPanel');
+    if (!host) return;
+    const isAr = (CURRENT_LANG || 'ar') === 'ar';
+    const list = faultsVisibleToUser().sort((a,b) => (new Date(b.ts) - new Date(a.ts)));
+    const isMgr = canManage && canManage();
+    const sevColor = { critical:'#C0392B', high:'#E67E22', medium:'#D4A017', low:'#2874A6' };
+    const sevLabel = isAr ? { critical:'حرج', high:'عالي', medium:'متوسط', low:'منخفض' } : { critical:'Critical', high:'High', medium:'Medium', low:'Low' };
+
+    const openCount = list.filter(f => f.status === 'open').length;
+    const resolvedCount = list.filter(f => f.status === 'resolved').length;
+    const publishedCount = list.filter(f => f.published).length;
+
+    host.innerHTML = `
+      <div class="faults-container">
+        <div class="faults-head">
+          <div>
+            <h2>⚠️ ${isAr?'سجل الأعطال الميدانية':'Field Faults Log'}</h2>
+            <div class="sub">${isAr?'أعطال مؤكدة من الميدان مربوطة بالمحاور المتأثرة':'Confirmed field faults linked to affected pivots'}${isMgr?' · '+(isAr?'لوحة إدارة':'management view'):''}</div>
+          </div>
+          ${isMgr ? `<button class="btn-add-fault" onclick="openFaultEditor()">➕ ${isAr?'إضافة عطل':'Add fault'}</button>` : ''}
+        </div>
+
+        <div class="faults-stats">
+          <div class="fs-item open"><div class="val">${openCount}</div><div class="lbl">${isAr?'نشطة':'Open'}</div></div>
+          <div class="fs-item resolved"><div class="val">${resolvedCount}</div><div class="lbl">${isAr?'منتهية':'Resolved'}</div></div>
+          ${isMgr ? `<div class="fs-item pub"><div class="val">${publishedCount}</div><div class="lbl">${isAr?'منشورة للفريق':'Published to team'}</div></div>` : ''}
+        </div>
+
+        ${list.length === 0 ? `<div class="faults-empty">✨ ${isAr?'لا توجد أعطال مسجّلة':'No faults logged'}</div>` :
+        `<div class="faults-list">
+          ${list.map(f => {
+            const when = new Date(f.ts).toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+            const pivots = (f.affectedPivots || []).map(p => `<span class="fpv">${p}</span>`).join('');
+            return `
+              <div class="fault-card ${f.status}" style="border-inline-start-color:${sevColor[f.severity]||'#999'};">
+                <div class="fc-head">
+                  <div class="fc-title-row">
+                    <span class="fc-sev" style="background:${sevColor[f.severity]||'#999'};">${sevLabel[f.severity]||f.severity}</span>
+                    <h3 class="fc-title">${escapeHtml(f.title)}</h3>
+                    ${f.published ? `<span class="fc-pub-badge">📡 ${isAr?'منشور':'Published'}</span>` : (isMgr?`<span class="fc-draft-badge">📝 ${isAr?'مسودة (للمسؤول فقط)':'Draft (admin only)'}</span>`:'')}
+                    ${f.status === 'resolved' ? `<span class="fc-res-badge">✅ ${isAr?'منتهي':'Resolved'}</span>` : ''}
+                  </div>
+                  <div class="fc-meta">
+                    📅 ${when}${f.well?` · 💧 ${isAr?'البئر':'Well'} ${f.well}`:''}${f.phase?` · ${f.phase}`:''}${f.reporter?` · 👤 ${escapeHtml(f.reporter)}`:''}
+                  </div>
+                </div>
+                <div class="fc-body">${escapeHtml(f.description || '')}</div>
+                ${pivots ? `<div class="fc-pivots"><span class="fc-pvlbl">${isAr?'المحاور المتأثرة:':'Affected pivots:'}</span>${pivots}</div>` : ''}
+                ${f.source ? `<div class="fc-source">📋 ${isAr?'المصدر':'Source'}: ${escapeHtml(f.source)}</div>` : ''}
+                ${isMgr ? `
+                  <div class="fc-actions">
+                    <button class="fa-btn fa-pub" onclick="toggleFaultPublished('${f.id}')">${f.published?(isAr?'📴 إلغاء النشر':'📴 Unpublish'):(isAr?'📡 نشر للفريق':'📡 Publish to team')}</button>
+                    <button class="fa-btn fa-res" onclick="toggleFaultResolved('${f.id}')">${f.status==='resolved'?(isAr?'↺ إعادة فتح':'↺ Reopen'):(isAr?'✅ إنهاء':'✅ Mark resolved')}</button>
+                    <button class="fa-btn fa-edit" onclick="openFaultEditor('${f.id}')">✏️ ${isAr?'تعديل':'Edit'}</button>
+                    <button class="fa-btn fa-del" onclick="deleteFault('${f.id}')">🗑️</button>
+                  </div>
+                ` : ''}
+              </div>`;
+          }).join('')}
+        </div>`}
+      </div>
+    `;
+}
+
+function toggleFaultPublished(id) {
+    if (!canManage || !canManage()) return;
+    const f = FIELD_FAULTS.find(x => x.id === id);
+    if (!f) return;
+    f.published = !f.published;
+    f.updatedAt = new Date().toISOString();
+    saveFaults(); renderFaultsLog(); renderAll();
+    toast(f.published ? '📡 تم النشر للفريق' : '📴 تم إلغاء النشر', 'success');
+}
+function toggleFaultResolved(id) {
+    if (!canManage || !canManage()) return;
+    const f = FIELD_FAULTS.find(x => x.id === id);
+    if (!f) return;
+    f.status = f.status === 'resolved' ? 'open' : 'resolved';
+    if (f.status === 'resolved') f.resolvedAt = new Date().toISOString();
+    saveFaults(); renderFaultsLog(); renderAll();
+    toast(f.status === 'resolved' ? '✅ تم إنهاء العطل' : '↺ تمت إعادة فتح العطل', 'success');
+}
+function deleteFault(id) {
+    if (!canManage || !canManage()) return;
+    if (!confirm('حذف هذا العطل نهائياً؟')) return;
+    FIELD_FAULTS = FIELD_FAULTS.filter(x => x.id !== id);
+    saveFaults(); renderFaultsLog(); renderAll();
+    toast('🗑️ حُذف العطل', 'success');
+}
+
+function openFaultEditor(id) {
+    if (!canManage || !canManage()) return;
+    const existing = id ? FIELD_FAULTS.find(x => x.id === id) : null;
+    const f = existing || { id: 'f_'+Date.now(), ts: new Date().toISOString(), severity:'high', status:'open', published:false, affectedPivots:[] };
+    const isEdit = !!existing;
+
+    // Inline prompt-based editor (fast, no modal overhead)
+    const title = prompt('عنوان العطل:', f.title || '');
+    if (title === null) return;
+    const well = prompt('البئر (مثل W22) — اختياري:', f.well || '');
+    if (well === null) return;
+    const pivotsRaw = prompt('المحاور المتأثرة (مفصولة بفاصلة) — اختياري:', (f.affectedPivots||[]).join(', '));
+    if (pivotsRaw === null) return;
+    const sev = prompt('الخطورة (critical / high / medium / low):', f.severity || 'high');
+    if (sev === null) return;
+    const desc = prompt('الوصف التفصيلي:', f.description || '');
+    if (desc === null) return;
+    const source = prompt('المصدر (اختياري — مثلاً: مجموعة الواتساب):', f.source || '');
+    if (source === null) return;
+
+    f.title = title.trim();
+    f.well = well.trim() || null;
+    f.affectedPivots = pivotsRaw.split(/[,،]/).map(s => s.trim()).filter(Boolean);
+    f.severity = ['critical','high','medium','low'].includes(sev.trim()) ? sev.trim() : 'high';
+    f.description = desc.trim();
+    f.source = source.trim() || null;
+    f.updatedAt = new Date().toISOString();
+    if (!isEdit) {
+        f.createdBy = CURRENT_USER?.id || 'admin';
+        f.reporter = CURRENT_USER?.name || '';
+        FIELD_FAULTS.push(f);
+    }
+    saveFaults(); renderFaultsLog(); renderAll();
+    toast(isEdit?'تم التعديل':'تم إضافة العطل', 'success');
+}
+
+// Returns a short HTML badge for a pivot id (used in modal + optionally in table)
+function faultBadgeForPivot(pivotId) {
+    const faults = faultsForPivot(pivotId);
+    if (!faults.length) return '';
+    const f = faults[0]; // most relevant
+    const color = { critical:'#C0392B', high:'#E67E22', medium:'#D4A017', low:'#2874A6' }[f.severity] || '#C0392B';
+    const when = new Date(f.ts).toLocaleDateString('en-GB', { day:'2-digit', month:'short' });
+    return `<div class="pivot-fault-banner" style="background:linear-gradient(135deg,${color} 0%,${color}DD 100%);">
+      <div class="pfb-head">⚠️ ${escapeHtml(f.title)} · ${when}</div>
+      <div class="pfb-body">${escapeHtml(f.description)}</div>
+      ${f.source?`<div class="pfb-src">📋 ${escapeHtml(f.source)}</div>`:''}
+    </div>`;
 }
 
 // ═══ "What changed since your last visit" — snapshot-based delta banner ═══
@@ -5050,7 +5326,7 @@ function closeMapFS() {
     document.getElementById('mapFS').classList.remove('active');
 }
 
-function renderAll() { renderKPIs(); renderTable(); try { updateSmartAlertBell(); } catch(e){} }
+function renderAll() { renderKPIs(); renderTable(); try { updateSmartAlertBell(); } catch(e){} try { updateFaultsTabVisibility(); } catch(e){} }
 
 // Animate a number from 0 to target value over duration
 function animateNumber(el, target, duration = 900) {
@@ -5263,6 +5539,7 @@ function showApp() {
     if (document.getElementById('panel1').classList.contains('active')) renderEngineers();
     checkPlantingTabVisibility();
     try { showVisitDeltaBanner(); } catch(e){}
+    try { updateFaultsTabVisibility(); } catch(e){}
 }
 
 function requireAuth() {
@@ -5459,6 +5736,7 @@ try { LANG = localStorage.getItem(LANG_KEY) || 'ar'; } catch(e) {}
 loadTracking();
 loadAuth();
 loadArchive();
+loadFaults();
 applyLang();
 requireAuth();
 syncInit();
