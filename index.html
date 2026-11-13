@@ -4754,7 +4754,7 @@ function drawWeather(data) {
         </div>
 
         <div style="margin-top:16px;padding:12px 16px;background:#F7FAF8;border-radius:8px;font-size:0.8rem;color:var(--wtn-text-soft);line-height:1.6;">
-            مصدر البيانات: ${WEATHER_PROVIDER?.name || 'Open-Meteo (نموذج GFS و ECMWF)'} · المعدلات التاريخية: المناخ الطبيعي لمنطقة ${WEATHER_LOCATION?.name?.split('،')[1]?.trim() || 'الجوف'} · التنبيهات محسوبة بناءً على عتبات زراعية مناسبة للقمح.
+            مصدر البيانات: Open-Meteo (نموذج GFS و ECMWF) · المعدلات التاريخية: المناخ الطبيعي لمنطقة ${(WEATHER_LOCATION && WEATHER_LOCATION.name && WEATHER_LOCATION.name.split('،')[1]) ? WEATHER_LOCATION.name.split('،')[1].trim() : 'الجوف'} · التنبيهات محسوبة بناءً على عتبات زراعية مناسبة للقمح.
         </div>
     </div>`;
 }
