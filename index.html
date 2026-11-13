@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 <style>
 :root{
     --wtn-green-dark:#0F3B2E;
@@ -336,6 +337,107 @@ body[dir="ltr"] .alert-item.critical{border-left-color:#C0392B}
 .qa-count{color:var(--wtn-green-dark);font-weight:700}
 .qa-count.bad{color:#C0392B}
 body[data-role="viewer"] .qa-bar{display:none !important}
+
+/* ═══ "What changed since your last visit" banner ═══ */
+#visitDeltaBanner{margin:0 0 12px}
+.vd-banner{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#FFF8E1 0%,#FDF3D0 100%);border:1px solid var(--wtn-gold);border-inline-start:4px solid var(--wtn-gold);border-radius:12px;padding:12px 16px;box-shadow:0 3px 12px rgba(212,160,23,0.15);animation:vdSlide 0.5s cubic-bezier(0.22,1,0.36,1)}
+@keyframes vdSlide{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.vd-icon{font-size:1.6rem;flex-shrink:0;animation:vdPulse 2.4s ease-in-out infinite}
+@keyframes vdPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.vd-body{flex:1}
+.vd-title{color:var(--wtn-green-dark);font-weight:800;font-size:0.96rem;letter-spacing:0.2px}
+.vd-when{color:var(--wtn-text-soft);font-weight:500;font-size:0.8rem;margin-inline-start:4px}
+.vd-details{color:var(--wtn-green-dark);font-size:0.9rem;margin-top:3px}
+.vd-details b{color:var(--wtn-green);font-weight:800;background:rgba(39,139,89,0.12);padding:1px 7px;border-radius:8px;margin:0 2px}
+.vd-dismiss{background:var(--wtn-green-dark);color:white;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-weight:800;font-size:0.95rem;flex-shrink:0;transition:all 0.15s}
+.vd-dismiss:hover{background:var(--wtn-green);transform:scale(1.1)}
+
+/* ═══ Smart Alerts bell + dropdown ═══ */
+.smart-alert-bell{position:relative;display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;background:transparent;cursor:pointer;font-size:1.15rem;transition:all 0.18s;user-select:none;margin-inline-end:6px}
+.smart-alert-bell:hover{background:rgba(255,255,255,0.12)}
+.smart-alert-bell.has-alerts{animation:bellWiggle 2.8s ease-in-out infinite}
+.smart-alert-bell.has-crit{color:#FFC0C0}
+@keyframes bellWiggle{0%,80%,100%{transform:rotate(0)}85%{transform:rotate(14deg)}90%{transform:rotate(-14deg)}95%{transform:rotate(7deg)}}
+.alert-count{position:absolute;top:2px;right:2px;min-width:18px;height:18px;padding:0 5px;background:#C0392B;color:white;font-size:0.68rem;font-weight:800;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;border:2px solid var(--wtn-green-dark);line-height:1}
+body[dir="rtl"] .alert-count{right:2px;left:auto}
+body[dir="ltr"] .alert-count{left:2px;right:auto}
+.smart-alerts-dropdown{position:absolute;top:60px;right:16px;background:white;border:1px solid var(--wtn-border);border-radius:12px;box-shadow:0 12px 40px rgba(15,59,46,0.2);width:380px;max-width:92vw;max-height:65vh;overflow:hidden;z-index:200;display:flex;flex-direction:column}
+body[dir="rtl"] .smart-alerts-dropdown{right:16px;left:auto}
+body[dir="ltr"] .smart-alerts-dropdown{left:16px;right:auto}
+.sa-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:linear-gradient(135deg,var(--wtn-green-dark),var(--wtn-green));color:white;font-weight:800}
+.sa-count{background:rgba(255,255,255,0.22);padding:2px 9px;border-radius:10px;font-size:0.78rem;margin-inline-start:6px}
+.sa-close{background:transparent;border:none;color:white;font-size:1.1rem;cursor:pointer;padding:4px 8px}
+.sa-list{overflow-y:auto;flex:1}
+.sa-item{display:flex;align-items:flex-start;gap:9px;padding:11px 14px;border-bottom:1px solid #F0F3F1;cursor:pointer;transition:background 0.12s}
+.sa-item:last-child{border-bottom:none}
+.sa-item:hover{background:#FBFCFB}
+.sa-icon{font-size:1.05rem;flex-shrink:0}
+.sa-msg{font-size:0.86rem;color:var(--wtn-green-dark);line-height:1.4}
+.sa-empty{padding:24px;text-align:center;color:var(--wtn-text-soft);font-size:0.9rem}
+
+/* ═══ Executive Dashboard ═══ */
+.tab-exec{background:linear-gradient(135deg,#1B4332,#277A3F);color:white !important;font-weight:800 !important;position:relative;overflow:visible}
+.tab-exec:hover{filter:brightness(1.1)}
+.tab-exec.active{background:linear-gradient(135deg,#D4A017,#B7791F) !important;color:#1B4332 !important}
+.exec-container{background:linear-gradient(145deg,#FBFCFB 0%,#F4F8F5 100%);border-radius:16px;padding:28px;box-shadow:0 6px 24px rgba(15,59,46,0.1);border:1px solid var(--wtn-border)}
+.exec-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;padding-bottom:18px;border-bottom:2px solid var(--wtn-gold);margin-bottom:24px}
+.exec-head h2{color:var(--wtn-green-dark);font-size:1.7rem;font-weight:800;font-family:'Cairo','Tajawal',sans-serif;margin:0;letter-spacing:0.3px}
+.exec-head .sub{color:var(--wtn-text-soft);font-size:0.95rem;font-weight:600;margin-top:6px}
+.exec-actions{display:flex;gap:8px}
+.btn-share{background:linear-gradient(135deg,#1B4332,#277A3F);color:white;border:none;padding:11px 22px;border-radius:10px;cursor:pointer;font-family:inherit;font-weight:700;font-size:0.92rem;letter-spacing:0.3px;transition:all 0.2s;box-shadow:0 3px 10px rgba(15,59,46,0.2)}
+.btn-share:hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(15,59,46,0.3)}
+.exec-hero{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center;padding:20px;background:white;border-radius:14px;box-shadow:inset 0 0 0 1px var(--wtn-border);margin-bottom:22px}
+.hero-ring-wrap{flex-shrink:0}
+.hero-ring .hero-pct{font-size:2.1rem;font-weight:800;fill:var(--wtn-green-dark);font-family:'Cairo','Tajawal',sans-serif}
+.hero-ring .hero-sub{font-size:0.78rem;font-weight:600;fill:var(--wtn-text-soft);letter-spacing:0.5px}
+@keyframes ringFill{to{stroke-dashoffset:var(--target-offset)}}
+#heroArc{stroke-dashoffset:502.65;transition:stroke-dashoffset 1.4s cubic-bezier(0.22,1,0.36,1)}
+.hero-side{display:flex;flex-direction:column;gap:12px}
+.hero-big{font-size:3.2rem;font-weight:800;color:var(--wtn-green-dark);line-height:1;font-family:'Cairo','Tajawal',sans-serif}
+.hero-big-sub{font-size:1.1rem;font-weight:600;color:var(--wtn-text-soft)}
+.hero-meta{display:flex;flex-direction:column;gap:5px;color:var(--wtn-text-soft);font-size:0.95rem}
+.hero-meta b{color:var(--wtn-green-dark);font-weight:800}
+.exec-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px}
+.exec-kpi{background:white;border:1px solid var(--wtn-border);border-radius:14px;padding:18px;text-align:center;border-top:4px solid var(--wtn-green);transition:transform 0.2s;cursor:default}
+.exec-kpi:hover{transform:translateY(-3px);box-shadow:0 6px 18px rgba(15,59,46,0.08)}
+.exec-kpi.safe{border-top-color:#27AE60}
+.exec-kpi.watch{border-top-color:#F5D77A}
+.exec-kpi.crit{border-top-color:#C0392B}
+.exec-kpi.area{border-top-color:#2874A6}
+.exec-kpi .icon{font-size:1.4rem;margin-bottom:4px}
+.exec-kpi .val{font-size:2.3rem;font-weight:800;color:var(--wtn-green-dark);line-height:1;font-family:'Cairo','Tajawal',sans-serif}
+.exec-kpi .lbl{font-size:0.86rem;color:var(--wtn-text-soft);margin-top:7px;font-weight:600}
+.exec-section{color:var(--wtn-green-dark);font-size:1.15rem;font-weight:800;margin:30px 0 14px;padding-bottom:7px;border-bottom:2px solid var(--wtn-gold);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.heatmap-legend{display:flex;gap:10px;font-size:0.76rem;font-weight:500;color:var(--wtn-text-soft)}
+.heatmap-legend .hm-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-inline-end:3px;vertical-align:middle}
+.exec-phases{display:flex;flex-direction:column;gap:10px;background:white;padding:18px;border-radius:12px;border:1px solid var(--wtn-border)}
+.phase-row{display:grid;grid-template-columns:50px 1fr 110px;gap:14px;align-items:center}
+.phase-name{font-weight:800;color:var(--wtn-green-dark);font-size:0.95rem}
+.phase-bar-outer{position:relative;height:28px;background:#E8EDE9;border-radius:6px;overflow:hidden}
+.phase-bar-inner{position:absolute;top:0;left:0;height:100%;background:linear-gradient(90deg,#B7D4C3,#E8EDE9);transition:width 1.1s cubic-bezier(0.22,1,0.36,1)}
+body[dir="rtl"] .phase-bar-inner{left:auto;right:0;background:linear-gradient(-90deg,#B7D4C3,#E8EDE9)}
+.phase-bar-planted{position:absolute;top:0;left:0;height:100%;background:linear-gradient(90deg,var(--wtn-green-mid),var(--wtn-green-dark));transition:width 1.3s cubic-bezier(0.22,1,0.36,1);transition-delay:0.1s}
+body[dir="rtl"] .phase-bar-planted{left:auto;right:0;background:linear-gradient(-90deg,var(--wtn-green-mid),var(--wtn-green-dark))}
+.phase-count{font-weight:700;color:var(--wtn-green-dark);text-align:end;font-size:0.9rem;font-family:monospace}
+.phase-pct{background:var(--wtn-gold);color:var(--wtn-green-dark);padding:2px 7px;border-radius:10px;font-size:0.72rem;font-weight:700;margin-inline-start:4px}
+.exec-heatmap{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:5px;background:white;padding:14px;border-radius:12px;border:1px solid var(--wtn-border)}
+.hm-cell{aspect-ratio:1;border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:0.66rem;font-weight:700;cursor:pointer;color:white;transition:all 0.15s;padding:2px;text-shadow:0 1px 2px rgba(0,0,0,0.3)}
+.hm-cell:hover{transform:scale(1.15);z-index:3;box-shadow:0 3px 10px rgba(0,0,0,0.25)}
+.hm-cell .hm-status{font-size:0.68rem;line-height:1;opacity:0.9}
+.exec-activity{background:white;border:1px solid var(--wtn-border);border-radius:12px;overflow:hidden}
+.activity-item{display:grid;grid-template-columns:28px 1fr auto;gap:10px;padding:10px 14px;border-bottom:1px solid #F0F3F1;align-items:center;font-size:0.88rem}
+.activity-item:last-child{border-bottom:none}
+.activity-item:hover{background:#FBFCFB}
+.act-icon{text-align:center}
+.act-desc{color:var(--wtn-green-dark)}
+.act-when{color:var(--wtn-text-soft);font-size:0.78rem;font-family:monospace;white-space:nowrap}
+.no-activity{padding:18px;text-align:center;color:var(--wtn-text-soft);font-style:italic}
+@media (max-width:600px){
+  .exec-hero{grid-template-columns:1fr;text-align:center}
+  .hero-ring{width:160px;height:160px}
+  .hero-big{font-size:2.4rem}
+  .phase-row{grid-template-columns:40px 1fr 95px;gap:8px}
+}
 
 /* ═══ Irrigation Plan panel ═══ */
 .ip-container{background:white;border-radius:14px;padding:24px;box-shadow:0 4px 18px rgba(15,59,46,0.07);border:1px solid var(--wtn-border)}
@@ -703,6 +805,10 @@ body[dir="ltr"] .toast{border-right:none;border-left:4px solid var(--wtn-green)}
     <div class="header-actions">
         <div class="header-weather" id="headerWeather" onclick="switchTab(6)" title="اضغط لعرض توقعات 10 أيام"></div>
         <div class="header-live" id="headerLive"></div>
+        <span class="smart-alert-bell" id="smartAlertBell" onclick="toggleSmartAlertsDropdown()" title="التنبيهات الذكية">
+            🔔<span class="alert-count" id="alertCount" style="display:none;">0</span>
+        </span>
+        <div class="smart-alerts-dropdown" id="smartAlertsDropdown" style="display:none;"></div>
         <span class="sync-chip offline" id="syncIndicator" onclick="syncNow()" title="انقر للمزامنة الآن">☁︎ بدون مزامنة</span>
         <span class="user-chip" id="userChip" style="display:none;">
             <span class="role-dot" id="userRoleDot"></span>
@@ -738,6 +844,7 @@ body[dir="ltr"] .toast{border-right:none;border-left:4px solid var(--wtn-green)}
     <div class="tab" onclick="switchTab(6)" data-ar="الطقس" data-en="Weather">الطقس</div>
     <div class="tab" id="plantingProgressTab" onclick="switchTab(7)" data-ar="تقدم الزراعة" data-en="Planting Progress" style="display:none;">تقدم الزراعة</div>
     <div class="tab" onclick="switchTab(8)" data-ar="خطة الري" data-en="Irrigation Plan">خطة الري</div>
+    <div class="tab tab-exec" onclick="switchTab(9)" data-ar="اللوحة التنفيذية" data-en="Executive Dashboard">👑 اللوحة التنفيذية</div>
 </div>
 
 <!-- Panel 0: All Pivots -->
@@ -908,6 +1015,11 @@ body[dir="ltr"] .toast{border-right:none;border-left:4px solid var(--wtn-green)}
 <!-- Panel 8: Irrigation Plan -->
 <div class="panel" id="panel8">
     <div id="irrigationPlanPanel"></div>
+</div>
+
+<!-- Panel 9: Executive Dashboard -->
+<div class="panel" id="panel9">
+    <div id="execDashboardPanel"></div>
 </div>
 
 <!-- Modal -->
@@ -3491,6 +3603,414 @@ function switchTab(idx) {
     if (idx === 6) renderWeather();
     if (idx === 7) renderPlantingProgress();
     if (idx === 8) renderIrrigationPlan();
+    if (idx === 9) renderExecDashboard();
+}
+
+// ═══ Export Executive Dashboard as a shareable PNG ═══
+async function exportDashboardImage() {
+    const panel = document.getElementById('execDashboardPanel');
+    if (!panel) { toast('اللوحة غير متوفرة','warn'); return; }
+    if (typeof html2canvas === 'undefined') {
+        toast('مكتبة التصدير ما حمّلت بعد — حاول مرة ثانية','warn');
+        return;
+    }
+    const isAr = (CURRENT_LANG || 'ar') === 'ar';
+    toast(isAr?'📸 جاري إنشاء الصورة...':'📸 Generating image...','info',1500);
+    try {
+        const canvas = await html2canvas(panel, {
+            scale: 2, backgroundColor: '#FBFCFB',
+            logging: false, useCORS: true, allowTaint: true,
+            onclone: (doc) => {
+                // Remove the share button from the clone so it doesn't appear in the image
+                const btn = doc.querySelector('.btn-share');
+                if (btn) btn.remove();
+            }
+        });
+        const dataUrl = canvas.toDataURL('image/png');
+        const stamp = new Date().toISOString().slice(0,10);
+        const filename = `watania_wheat_dashboard_${stamp}.png`;
+
+        // Try Web Share API first (mobile-friendly)
+        const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+        const file = new File([blob], filename, { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+                await navigator.share({
+                    files: [file],
+                    title: isAr?'ملخص موسم القمح 2026/2027':'Wheat 2026/2027 Summary',
+                    text: isAr?`📊 موسم القمح 2026/2027 — بسيطاء`:`📊 Wheat Season 2026/2027 — Basaita`
+                });
+                toast(isAr?'✅ تمت المشاركة':'✅ Shared','success');
+                return;
+            } catch(e) { /* fall through to download */ }
+        }
+
+        // Fallback: download the PNG
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = filename;
+        document.body.appendChild(a); a.click(); a.remove();
+        toast(isAr?'✅ تم تحميل الصورة — جاهزة للمشاركة':'✅ Image downloaded — ready to share','success',3000);
+    } catch(e) {
+        console.error('exportDashboardImage failed:', e);
+        toast(isAr?'⚠️ تعذّر إنشاء الصورة — حاول مرة ثانية':'⚠️ Failed to generate image','warn');
+    }
+}
+
+// ═══ "What changed since your last visit" — snapshot-based delta banner ═══
+const LAST_VISIT_KEY_PREFIX = 'wheat2027_last_visit_';
+function lastVisitKey() { return LAST_VISIT_KEY_PREFIX + (CURRENT_USER?.id || 'anon'); }
+
+function takeSnapshot() {
+    const snap = {};
+    DATA.forEach(r => {
+        const t = TRACKING[r.pivot] || {};
+        snap[r.pivot] = {
+            p: t.plantingDate || null,
+            h: t.harvestDate || null,
+            u: t.updated || null,
+            img: (t.images || []).length,
+            vid: (t.videos || []).length,
+            notes: (t.notes || []).length,
+            ops: t.operations ? Object.keys(t.operations).length : 0,
+        };
+    });
+    return { ts: new Date().toISOString(), data: snap };
+}
+
+function computeVisitDelta() {
+    let prev = null;
+    try { prev = JSON.parse(localStorage.getItem(lastVisitKey()) || 'null'); } catch(e){}
+    if (!prev || !prev.data) return null;
+    const curr = takeSnapshot();
+    const d = { newPlanted: [], newHarvested: [], newImages: 0, newNotes: 0, newOps: 0, touchedPivots: new Set() };
+    Object.keys(curr.data).forEach(p => {
+        const c = curr.data[p]; const o = prev.data[p];
+        if (!o) { d.touchedPivots.add(p); return; }
+        if (c.p && !o.p) { d.newPlanted.push(p); d.touchedPivots.add(p); }
+        if (c.h && !o.h) { d.newHarvested.push(p); d.touchedPivots.add(p); }
+        if (c.img > o.img) { d.newImages += (c.img - o.img); d.touchedPivots.add(p); }
+        if (c.notes > o.notes) { d.newNotes += (c.notes - o.notes); d.touchedPivots.add(p); }
+        if (c.ops > o.ops) { d.newOps += (c.ops - o.ops); d.touchedPivots.add(p); }
+    });
+    d.touchedCount = d.touchedPivots.size;
+    d.prevTs = prev.ts;
+    return d;
+}
+
+function showVisitDeltaBanner() {
+    if (!CURRENT_USER) return;
+    const d = computeVisitDelta();
+    if (!d) {
+        // First visit — just store current snapshot
+        try { localStorage.setItem(lastVisitKey(), JSON.stringify(takeSnapshot())); } catch(e){}
+        return;
+    }
+    const hasChanges = d.touchedCount > 0 || d.newImages > 0 || d.newNotes > 0 || d.newOps > 0;
+    if (!hasChanges) return;
+
+    const isAr = (CURRENT_LANG || 'ar') === 'ar';
+    const prevFmt = new Date(d.prevTs).toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+    const parts = [];
+    if (d.newPlanted.length) parts.push(`<b>${d.newPlanted.length}</b> ${isAr?'محور زُرع':'pivot(s) planted'}`);
+    if (d.newHarvested.length) parts.push(`<b>${d.newHarvested.length}</b> ${isAr?'محور حُصد':'pivot(s) harvested'}`);
+    if (d.newImages > 0) parts.push(`<b>${d.newImages}</b> ${isAr?'صورة':'photo(s)'}`);
+    if (d.newNotes > 0) parts.push(`<b>${d.newNotes}</b> ${isAr?'ملاحظة':'note(s)'}`);
+    if (d.newOps > 0) parts.push(`<b>${d.newOps}</b> ${isAr?'عملية':'operation(s)'}`);
+
+    let host = document.getElementById('visitDeltaBanner');
+    if (!host) {
+        host = document.createElement('div');
+        host.id = 'visitDeltaBanner';
+        const main = document.querySelector('.tabs');
+        if (main?.parentNode) main.parentNode.insertBefore(host, main);
+        else document.body.insertBefore(host, document.body.firstChild);
+    }
+    host.innerHTML = `
+      <div class="vd-banner">
+        <div class="vd-icon">✨</div>
+        <div class="vd-body">
+          <div class="vd-title">${isAr?'منذ زيارتك الأخيرة':'Since your last visit'} <span class="vd-when">(${prevFmt})</span></div>
+          <div class="vd-details">${parts.join(' · ')}</div>
+        </div>
+        <button class="vd-dismiss" onclick="dismissVisitDelta()" title="${isAr?'تم الاطلاع':'Dismiss'}">✓</button>
+      </div>
+    `;
+}
+
+function dismissVisitDelta() {
+    try { localStorage.setItem(lastVisitKey(), JSON.stringify(takeSnapshot())); } catch(e){}
+    const host = document.getElementById('visitDeltaBanner');
+    if (host) { host.innerHTML = ''; host.remove(); }
+}
+
+// ═══ Smart Alerts Engine — auto-detect stale pivots, stalled ops, unattended risks ═══
+let SMART_ALERTS = [];
+function computeSmartAlerts() {
+    const alerts = [];
+    const now = Date.now();
+    const DAY = 86400000;
+    DATA.forEach(r => {
+        const t = TRACKING[r.pivot];
+        if (!t) return;
+        const lastUpd = t.updated ? new Date(t.updated).getTime() : 0;
+        // Only alert on pivots that have been touched before (otherwise it's just "not started")
+        if (lastUpd > 0 && (now - lastUpd) > 7 * DAY) {
+            alerts.push({
+                sev: 'info',
+                icon: '⏰',
+                pivot: r.pivot, phase: r.phase,
+                msg: `${r.pivot}: لم يُحدَّث منذ ${Math.floor((now - lastUpd) / DAY)} يوم`,
+                action: () => openModal(r.pivot)
+            });
+        }
+        // Stalled operations: marked "جاري العمل" with last update > 24h
+        if (t.operations) {
+            Object.entries(t.operations).forEach(([opId, op]) => {
+                if (op?.status === 'جاري العمل') {
+                    const opTs = op.date ? new Date(op.date).getTime() : lastUpd;
+                    const daysSince = Math.floor((now - opTs) / DAY);
+                    if (daysSince > 1) {
+                        alerts.push({
+                            sev: 'warn',
+                            icon: '⏸',
+                            pivot: r.pivot, phase: r.phase,
+                            msg: `${r.pivot} · ${opId}: جاري العمل لكن متوقف من ${daysSince} يوم`,
+                            action: () => openModal(r.pivot)
+                        });
+                    }
+                }
+            });
+        }
+        // Critical/high risk with no recent action (14 days)
+        if ((r.risk === 'critical' || r.risk === 'high') && lastUpd > 0 && (now - lastUpd) > 14 * DAY) {
+            alerts.push({
+                sev: 'crit',
+                icon: '🔴',
+                pivot: r.pivot, phase: r.phase,
+                msg: `${r.pivot}: محور ${r.risk === 'critical' ? 'حرج' : 'عالي الخطر'} بدون إجراء منذ ${Math.floor((now - lastUpd) / DAY)} يوم`,
+                action: () => openModal(r.pivot)
+            });
+        }
+    });
+    // Sort: crit → warn → info
+    const order = { crit: 0, warn: 1, info: 2 };
+    alerts.sort((a, b) => (order[a.sev] || 9) - (order[b.sev] || 9));
+    SMART_ALERTS = alerts.slice(0, 50);
+    return SMART_ALERTS;
+}
+
+function updateSmartAlertBell() {
+    computeSmartAlerts();
+    const bell = document.getElementById('smartAlertBell');
+    const count = document.getElementById('alertCount');
+    if (!bell || !count) return;
+    const n = SMART_ALERTS.length;
+    if (n === 0) {
+        count.style.display = 'none';
+        bell.classList.remove('has-alerts', 'has-crit');
+    } else {
+        count.style.display = 'inline-flex';
+        count.textContent = n > 99 ? '99+' : n;
+        bell.classList.add('has-alerts');
+        bell.classList.toggle('has-crit', SMART_ALERTS.some(a => a.sev === 'crit'));
+    }
+}
+
+function toggleSmartAlertsDropdown() {
+    const dd = document.getElementById('smartAlertsDropdown');
+    if (!dd) return;
+    if (dd.style.display === 'block') { dd.style.display = 'none'; return; }
+    computeSmartAlerts();
+    const isAr = (CURRENT_LANG || 'ar') === 'ar';
+    if (SMART_ALERTS.length === 0) {
+        dd.innerHTML = `<div class="sa-empty">✨ ${isAr?'كل شيء على ما يرام — لا تنبيهات حالياً':'All clear — no alerts right now'}</div>`;
+    } else {
+        const sevColor = { crit:'#C0392B', warn:'#E67E22', info:'#2874A6' };
+        dd.innerHTML = `
+          <div class="sa-head">
+            <div>🔔 ${isAr?'التنبيهات الذكية':'Smart alerts'} <span class="sa-count">${SMART_ALERTS.length}</span></div>
+            <button onclick="toggleSmartAlertsDropdown()" class="sa-close">✕</button>
+          </div>
+          <div class="sa-list">
+            ${SMART_ALERTS.map((a, i) => `
+              <div class="sa-item" onclick="handleSmartAlertClick(${i})" style="border-inline-start:3px solid ${sevColor[a.sev] || '#7a8a85'};">
+                <span class="sa-icon">${a.icon}</span>
+                <span class="sa-msg">${escapeHtml(a.msg)}</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+    }
+    dd.style.display = 'block';
+    // Close on outside click
+    setTimeout(() => {
+        document.addEventListener('click', function closeAlertDD(e) {
+            if (!dd.contains(e.target) && e.target.id !== 'smartAlertBell' && !e.target.closest('#smartAlertBell')) {
+                dd.style.display = 'none';
+                document.removeEventListener('click', closeAlertDD);
+            }
+        });
+    }, 0);
+}
+
+function handleSmartAlertClick(idx) {
+    const a = SMART_ALERTS[idx];
+    if (!a) return;
+    document.getElementById('smartAlertsDropdown').style.display = 'none';
+    if (typeof a.action === 'function') a.action();
+}
+
+// ═══ Executive Dashboard — hero + KPIs + phase bars + risk heatmap + activity feed ═══
+function renderExecDashboard() {
+    const host = document.getElementById('execDashboardPanel');
+    if (!host) return;
+    const isAr = (CURRENT_LANG || 'ar') === 'ar';
+    const total = DATA.length;
+    const plantedCount = DATA.filter(r => TRACKING[r.pivot]?.plantingDate).length;
+    const harvestedCount = DATA.filter(r => TRACKING[r.pivot]?.harvestDate).length;
+    const pct = total > 0 ? Math.round((plantedCount / total) * 100) : 0;
+    const totalArea = DATA.reduce((s, r) => s + (r.area || 0), 0);
+    const plantedArea = DATA.filter(r => TRACKING[r.pivot]?.plantingDate).reduce((s, r) => s + (r.area || 0), 0);
+    // Risk tiers
+    const rSafe = DATA.filter(r => r.risk !== 'critical' && r.risk !== 'high').length;
+    const rWatch = DATA.filter(r => r.risk === 'high').length;
+    const rCrit = DATA.filter(r => r.risk === 'critical').length;
+    // Phase counts
+    const phases = {};
+    DATA.forEach(r => { phases[r.phase] = (phases[r.phase] || 0) + 1; });
+    const phaseKeys = Object.keys(phases).sort();
+    const phaseMax = Math.max(1, ...Object.values(phases));
+    // Activity (last 10 audit events)
+    const activity = (AUDIT_LOG || []).slice(0, 10);
+
+    const dateFmt = new Date().toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+
+    // Circumference for the SVG arc (r=80 → c≈502.6)
+    const circ = 502.65;
+    const arcOffset = circ * (1 - pct/100);
+
+    host.innerHTML = `
+      <div class="exec-container">
+        <div class="exec-head">
+          <div>
+            <h2>👑 ${isAr?'اللوحة التنفيذية':'Executive Dashboard'} — ${isAr?'موسم 2026/2027':'Season 2026/2027'}</h2>
+            <div class="sub">🌾 ${WEATHER_LOCATION?.name || 'بسيطاء، الجوف'} · 📅 ${dateFmt}</div>
+          </div>
+          <div class="exec-actions">
+            <button class="btn-share" onclick="exportDashboardImage()">📸 ${isAr?'مشاركة الملخص':'Share summary'}</button>
+          </div>
+        </div>
+
+        <!-- Hero: completion ring -->
+        <div class="exec-hero">
+          <div class="hero-ring-wrap">
+            <svg class="hero-ring" width="200" height="200" viewBox="0 0 200 200">
+              <circle cx="100" cy="100" r="80" fill="none" stroke="#E8EDE9" stroke-width="16"/>
+              <circle cx="100" cy="100" r="80" fill="none" stroke="url(#heroGrad)" stroke-width="16"
+                      stroke-linecap="round" stroke-dasharray="${circ}"
+                      stroke-dashoffset="${circ}" transform="rotate(-90 100 100)"
+                      style="animation: ringFill 1.4s ease-out forwards;" id="heroArc"/>
+              <defs>
+                <linearGradient id="heroGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="var(--wtn-green-mid)"/>
+                  <stop offset="100%" stop-color="var(--wtn-gold)"/>
+                </linearGradient>
+              </defs>
+              <text x="100" y="92" text-anchor="middle" class="hero-pct" id="heroPctText">0%</text>
+              <text x="100" y="118" text-anchor="middle" class="hero-sub">${isAr?'مُنجَز':'Completed'}</text>
+            </svg>
+          </div>
+          <div class="hero-side">
+            <div class="hero-big">${plantedCount}<span class="hero-big-sub"> / ${total} ${isAr?'محور':'pivots'}</span></div>
+            <div class="hero-meta">
+              <div><b>${Math.round(plantedArea).toLocaleString()}</b> ${isAr?'هكتار مزروع':'hectares planted'}</div>
+              <div><b>${Math.round(totalArea).toLocaleString()}</b> ${isAr?'هكتار إجمالي':'total hectares'}</div>
+              ${harvestedCount > 0 ? `<div><b>${harvestedCount}</b> ${isAr?'محور محصود':'pivots harvested'}</div>` : ''}
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI tiles -->
+        <div class="exec-kpis">
+          <div class="exec-kpi safe"><div class="icon">🟢</div><div class="val" data-cnt="${rSafe}">0</div><div class="lbl">${isAr?'محاور آمنة':'Safe pivots'}</div></div>
+          <div class="exec-kpi watch"><div class="icon">🟡</div><div class="val" data-cnt="${rWatch}">0</div><div class="lbl">${isAr?'قيد المتابعة':'Watch list'}</div></div>
+          <div class="exec-kpi crit"><div class="icon">🔴</div><div class="val" data-cnt="${rCrit}">0</div><div class="lbl">${isAr?'محاور حرجة':'Critical'}</div></div>
+          <div class="exec-kpi area"><div class="icon">💧</div><div class="val" data-cnt="${Math.round(totalArea)}">0</div><div class="lbl">${isAr?'هكتار إجمالي':'Total hectares'}</div></div>
+        </div>
+
+        <!-- Phase distribution -->
+        <h3 class="exec-section">📊 ${isAr?'توزيع المراحل':'Phase distribution'}</h3>
+        <div class="exec-phases">
+          ${phaseKeys.map(ph => {
+            const c = phases[ph]; const w = Math.round((c/phaseMax)*100);
+            const phPlanted = DATA.filter(r => r.phase === ph && TRACKING[r.pivot]?.plantingDate).length;
+            const phPct = c > 0 ? Math.round((phPlanted/c)*100) : 0;
+            return `<div class="phase-row">
+              <div class="phase-name">${ph}</div>
+              <div class="phase-bar-outer">
+                <div class="phase-bar-inner" style="width:0%;" data-w="${w}"></div>
+                <div class="phase-bar-planted" style="width:0%;" data-w="${Math.round((phPlanted/phaseMax)*100)}"></div>
+              </div>
+              <div class="phase-count"><b>${phPlanted}</b>/<span style="color:var(--wtn-text-soft);">${c}</span> <span class="phase-pct">${phPct}%</span></div>
+            </div>`;
+          }).join('')}
+        </div>
+
+        <!-- Risk heatmap -->
+        <h3 class="exec-section">🔥 ${isAr?'خريطة حرارية للمخاطر':'Risk heatmap'} <span class="heatmap-legend"><span class="hm-dot" style="background:#27AE60;"></span>${isAr?'آمن':'Safe'} <span class="hm-dot" style="background:#F5D77A;"></span>${isAr?'متابعة':'Watch'} <span class="hm-dot" style="background:#E67E22;"></span>${isAr?'عالي':'High'} <span class="hm-dot" style="background:#C0392B;"></span>${isAr?'حرج':'Critical'}</span></h3>
+        <div class="exec-heatmap">
+          ${DATA.map(r => {
+            const risk = r.risk || 'low';
+            const color = risk === 'critical' ? '#C0392B' : risk === 'high' ? '#E67E22' : risk === 'medium' ? '#F5D77A' : '#27AE60';
+            const tr = TRACKING[r.pivot] || {};
+            const status = tr.harvestDate ? '✓' : tr.plantingDate ? '●' : '○';
+            return `<div class="hm-cell" style="background:${color};" title="${r.pivot} · ${r.phase} · ${risk}" onclick="openModal('${r.pivot}')">${r.pivot.slice(-3)}<div class="hm-status">${status}</div></div>`;
+          }).join('')}
+        </div>
+
+        <!-- Activity feed -->
+        <h3 class="exec-section">🕒 ${isAr?'آخر النشاطات':'Recent activity'}</h3>
+        <div class="exec-activity">
+          ${activity.length === 0 ? `<div class="no-activity">${isAr?'لا توجد نشاطات مُسجّلة بعد':'No activity logged yet'}</div>` :
+            activity.map(a => {
+              const when = a.ts ? new Date(a.ts).toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
+              const iconMap = { login:'🔑', logout:'🚪', edit:'✏️', delete:'🗑️', add:'➕' };
+              return `<div class="activity-item">
+                <span class="act-icon">${iconMap[a.action] || '•'}</span>
+                <span class="act-desc">${escapeHtml(a.detail || a.action || '')}</span>
+                <span class="act-when">${when}</span>
+              </div>`;
+            }).join('')}
+        </div>
+      </div>
+    `;
+
+    // Animate KPI numbers
+    setTimeout(() => {
+        host.querySelectorAll('.exec-kpi .val').forEach(el => {
+            const target = parseInt(el.dataset.cnt) || 0;
+            animateNumber(el, target, 1100);
+        });
+        // Animate phase bars
+        host.querySelectorAll('.phase-bar-inner, .phase-bar-planted').forEach(el => {
+            el.style.width = (el.dataset.w || 0) + '%';
+        });
+        // Animate hero percent
+        const heroPct = host.querySelector('#heroPctText');
+        if (heroPct) animatePct(heroPct, pct, 1400);
+    }, 60);
+}
+
+function animatePct(el, target, dur) {
+    const start = performance.now();
+    function step(t) {
+        const p = Math.min(1, (t - start) / dur);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(target * eased) + '%';
+        if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
 }
 
 // ═══ Irrigation Plan — pre-planting prep status, infrastructure classification, watchlist ═══
@@ -4530,7 +5050,7 @@ function closeMapFS() {
     document.getElementById('mapFS').classList.remove('active');
 }
 
-function renderAll() { renderKPIs(); renderTable(); }
+function renderAll() { renderKPIs(); renderTable(); try { updateSmartAlertBell(); } catch(e){} }
 
 // Animate a number from 0 to target value over duration
 function animateNumber(el, target, duration = 900) {
@@ -4742,6 +5262,7 @@ function showApp() {
     renderAll();
     if (document.getElementById('panel1').classList.contains('active')) renderEngineers();
     checkPlantingTabVisibility();
+    try { showVisitDeltaBanner(); } catch(e){}
 }
 
 function requireAuth() {
