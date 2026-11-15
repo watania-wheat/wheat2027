@@ -106,6 +106,13 @@ tbody tr:nth-child(even) td{background:#FBFCFB}
 .phase-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:0.7rem;font-weight:600;color:white}
 .phase-badge.Ph1{background:#1B4332}.phase-badge.Ph2{background:#14213D}.phase-badge.Ph3{background:#6B2737}
 .pivot-name{font-weight:700;color:#1B4332;font-size:0.92rem}
+/* ═══ Visible pivot checkbox next to each pivot ═══ */
+.pv-cell{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+input[type="checkbox"].pivot-select,input[type="checkbox"]#selectAllPivots{-webkit-appearance:none;appearance:none;width:22px;height:22px;min-width:22px;border:2px solid var(--wtn-green-mid);border-radius:6px;background:white;cursor:pointer;vertical-align:middle;position:relative;transition:all .12s;margin:0}
+input[type="checkbox"].pivot-select:checked,input[type="checkbox"]#selectAllPivots:checked{background:var(--wtn-green) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center/16px no-repeat;border-color:var(--wtn-green)}
+#selectAllPivots{border-color:white !important}
+tr.pv-selected td{background:#FFF8E1 !important}
+#bulkActionBar{position:sticky;top:6px;z-index:50}
 .risk-tag{display:inline-block;padding:3px 10px;border-radius:8px;font-size:0.72rem;font-weight:700;letter-spacing:0.2px;min-width:52px;text-align:center}
 .risk-tag.critical{background:#FFD5D5;color:#C0392B}.risk-tag.high{background:#FDEBD0;color:#E67E22}
 .risk-tag.medium{background:#FFF3CD;color:#D4A017}.risk-tag.low{background:#D8F3DC;color:#27AE60}
@@ -963,9 +970,8 @@ body[dir="ltr"] .toast{border-right:none;border-left:4px solid var(--wtn-green)}
     </div>
     <div class="table-wrapper"><table>
         <thead><tr>
-            <th><input type="checkbox" id="selectAllPivots" onclick="toggleSelectAll(this)" title="تحديد الكل"></th>
             <th>#</th><th data-ar="المرحلة" data-en="Phase">المرحلة</th>
-            <th data-ar="المحور" data-en="Pivot">المحور</th><th data-ar="البئر" data-en="Well">البئر</th>
+            <th><span class="pv-cell"><input type="checkbox" id="selectAllPivots" onclick="toggleSelectAll(this)" title="تحديد الكل"><span data-ar="المحور" data-en="Pivot">المحور</span></span></th><th data-ar="البئر" data-en="Well">البئر</th>
             <th data-ar="المساحة" data-en="Area">المساحة</th><th data-ar="المهندس" data-en="Engineer">المهندس</th>
             <th data-ar="تجربة" data-en="Trial">تجربة</th>
             <th data-ar="الخطر" data-en="Risk">الخطر</th>
@@ -1809,10 +1815,9 @@ function renderTable() {
         };
         return `
             <tr onclick="if(event.target.tagName!=='INPUT')openModal('${r.pivot}')">
-                <td onclick="event.stopPropagation()"><input type="checkbox" class="pivot-select" data-pivot="${r.pivot}" onchange="updateBulkBar()"></td>
                 <td>${i+1}</td>
                 <td><span class="phase-badge ${r.phase}">${r.phase}</span></td>
-                <td><span class="pivot-name">${r.pivot}</span></td>
+                <td><span class="pv-cell"><input type="checkbox" class="pivot-select" data-pivot="${r.pivot}" onclick="event.stopPropagation()" onchange="updateBulkBar()"><span class="pivot-name">${r.pivot}</span></span></td>
                 <td>${r.well}</td>
                 <td>${r.area}</td>
                 <td>${assigned && ENGINEERS[assigned] ? `<span class="engineer-tag" style="background:${ENGINEERS[assigned].color || '#555'};">${(ENGINEERS[assigned][LANG]||ENGINEERS[assigned].ar).split(' ').slice(1).join(' ') || (ENGINEERS[assigned][LANG]||ENGINEERS[assigned].ar)}</span>` : `<span class="engineer-tag unassigned">${LANG==='ar'?'غير معين':'Unassigned'}</span>`}</td>
@@ -5356,6 +5361,7 @@ function toggleSelectAll(cb) {
 
 function updateBulkBar() {
     const selected = document.querySelectorAll('.pivot-select:checked');
+    document.querySelectorAll('.pivot-select').forEach(el => { const tr = el.closest('tr'); if (tr) tr.classList.toggle('pv-selected', el.checked); });
     const bar = document.getElementById('bulkActionBar');
     const countEl = document.getElementById('bulkCount');
     if (!bar) return;
