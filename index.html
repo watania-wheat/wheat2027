@@ -728,6 +728,19 @@ body[data-role="viewer"] .engineer-card button,
 body[data-role="viewer"] .modal-body select[onchange*="setEngineer"]{display:none !important}
 /* Also hide any element explicitly marked no-view */
 body[data-role="viewer"] .edit-only{display:none !important}
+/* Scoped engineers: management tools hidden; out-of-area pivots read-only */
+body[data-eng-scoped] .qa-bar,
+body[data-eng-scoped] #bulkActionBar,
+body[data-eng-scoped] .pivot-select,
+body[data-eng-scoped] #selectAllPivots,
+body[data-eng-scoped] .tabs .tab:nth-child(2),
+body[data-eng-scoped] .tabs .tab:nth-child(3),
+body[data-eng-scoped] .modal-body select[onchange*="setEngineer"]{display:none !important}
+body[data-eng-own] .tabs .tab:nth-child(4),
+body[data-eng-own] .tabs .tab-exec,
+body[data-eng-own] #engineerFilter{display:none !important}
+.modal-body.pivot-readonly input,.modal-body.pivot-readonly select,.modal-body.pivot-readonly textarea,.modal-body.pivot-readonly button,.modal-body.pivot-readonly .file-label{pointer-events:none;opacity:0.55}
+.ro-banner{background:#FFF3CD;color:#7A5A00;border:1px solid #D4A017;border-radius:8px;padding:9px 12px;margin-bottom:12px;font-weight:700;font-size:0.88rem}
 /* For viewers, prevent form inputs from being edited (soft fallback) */
 body[data-role="viewer"] input[type="text"],
 body[data-role="viewer"] input[type="number"],
@@ -1411,7 +1424,7 @@ function syncUpdateIndicator() {
     };
     const icons = { syncing: '⟳', synced: '✓', error: '⚠', offline: '☁︎' };
     el.className = 'sync-chip ' + SYNC.status;
-    const ts = SYNC.lastPullAt ? new Date(SYNC.lastPullAt).toLocaleTimeString(LANG==='ar'?'ar-SA':'en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
+    const ts = SYNC.lastPullAt ? new Date(SYNC.lastPullAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
     el.innerHTML = `${icons[SYNC.status]||'☁︎'} ${labels[SYNC.status]||''}`;
     el.title = (LANG==='ar' ? 'آخر مزامنة' : 'Last sync') + ': ' + ts + (SYNC.lastError ? ' · ' + SYNC.lastError : '');
 }
@@ -1700,8 +1713,8 @@ function getPivotData(p) {
 
 function addDays(d,days){ if(!d) return null; const x=new Date(d); x.setDate(x.getDate()+days); return x.toISOString().slice(0,10); }
 function daysBetween(d1,d2){ if(!d1||!d2) return null; return Math.round((new Date(d2)-new Date(d1))/86400000); }
-function fmtDate(iso){ if(!iso) return '—'; return new Date(iso).toLocaleDateString(LANG==='ar'?'ar-SA':'en-GB'); }
-function fmtDateTime(iso){ if(!iso) return '—'; const d=new Date(iso); return d.toLocaleDateString(LANG==='ar'?'ar-SA':'en-GB')+' '+d.toLocaleTimeString(LANG==='ar'?'ar-SA':'en-GB',{hour:'2-digit',minute:'2-digit'}); }
+function fmtDate(iso){ if(!iso) return '—'; return new Date(iso).toLocaleDateString('en-GB'); }
+function fmtDateTime(iso){ if(!iso) return '—'; const d=new Date(iso); return d.toLocaleDateString('en-GB')+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); }
 function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function L(k){ return T[LANG][k] || k; }
 function opName(op){ return op['name_'+LANG] || op.name_ar; }
@@ -1727,7 +1740,7 @@ function getProgress(pivot) {
 }
 
 function renderKPIs() {
-    const relevant = EMBEDDED_ENGINEER ? DATA.filter(r => ASSIGNMENTS[r.pivot] === EMBEDDED_ENGINEER) : DATA;
+    const relevant = EMBEDDED_ENGINEER ? DATA.filter(r => ASSIGNMENTS[r.pivot] === EMBEDDED_ENGINEER) : scopedData();
     const total = relevant.length;
     const inPrep = relevant.filter(r => getPivotStatus(r.pivot) === 'prep').length;
     const planted = relevant.filter(r => getPivotStatus(r.pivot) === 'planted').length;
@@ -1789,6 +1802,7 @@ function renderTable() {
 
     let base = DATA;
     if (EMBEDDED_ENGINEER) base = DATA.filter(r => ASSIGNMENTS[r.pivot] === EMBEDDED_ENGINEER);
+    else base = scopedData();
 
     const filtered = base.filter(r => {
         const assigned = ASSIGNMENTS[r.pivot];
@@ -5652,6 +5666,7 @@ function showApp() {
     checkPlantingTabVisibility();
     try { showVisitDeltaBanner(); } catch(e){}
     try { updateFaultsTabVisibility(); } catch(e){}
+    try { applyEngineerScopeUI(); renderAll(); } catch(e){}
 }
 
 function requireAuth() {
@@ -5664,6 +5679,104 @@ function isViewer() { return CURRENT_USER?.role === 'viewer'; }
 function isSupervisor() { return CURRENT_USER?.role === 'supervisor'; }
 function canManage() { return isAdmin() || isSupervisor(); }  // pivot-level admin rights
 function canEdit() { return !isViewer(); }
+
+// ═══ ENGINEER PERMISSIONS (set by admin per engineer, stored on ENGINEERS[id].perm → synced) ═══
+//   own      : sees only his pivots (and his foremen's), edits only them   ← default
+//   view_all : sees all pivots, edits only his own
+//   full     : sees and edits all pivots
+const ENG_PERMS = {
+    own:      { ar: 'محاوره فقط (عرض وتعديل)',      en: 'Own pivots only' },
+    view_all: { ar: 'يشوف الكل ويعدّل محاوره فقط', en: 'View all, edit own' },
+    full:     { ar: 'صلاحية كاملة على كل المحاور', en: 'Full access' }
+};
+function engPerm(id) { const p = ENGINEERS[id]?.perm; return ENG_PERMS[p] ? p : 'own'; }
+function isScopedEngineer() { return CURRENT_USER?.role === 'engineer' && engPerm(CURRENT_USER.id) !== 'full'; }
+function myScopeIds() {
+    if (!CURRENT_USER) return [];
+    const id = CURRENT_USER.id;
+    return [id, ...Object.keys(ENGINEERS).filter(k => ENGINEERS[k].role === 'foreman' && ENGINEERS[k].parent === id)];
+}
+function canSeeAllPivots() {
+    if (!CURRENT_USER || CURRENT_USER.role !== 'engineer') return true;
+    return engPerm(CURRENT_USER.id) !== 'own';
+}
+function canEditPivot(p) {
+    if (!CURRENT_USER) return true;
+    if (CURRENT_USER.role === 'admin' || CURRENT_USER.role === 'supervisor') return true;
+    if (CURRENT_USER.role === 'viewer') return false;
+    if (engPerm(CURRENT_USER.id) === 'full') return true;
+    return myScopeIds().includes(ASSIGNMENTS[p]);
+}
+function scopedData() {
+    if (canSeeAllPivots()) return DATA;
+    const ids = myScopeIds();
+    return DATA.filter(r => ids.includes(ASSIGNMENTS[r.pivot]));
+}
+function setEngineerPerm(id) {
+    if (!isAdmin()) { toast('المسؤول فقط', 'warn'); return; }
+    const v = document.getElementById('perm-'+id)?.value || 'own';
+    if (!ENGINEERS[id]) return;
+    ENGINEERS[id].perm = v;
+    saveEngineers();
+    auditLog('edit', '', `صلاحية ${ENGINEERS[id].ar || id}: ${ENG_PERMS[v].ar}`);
+    toast(`تم: ${ENGINEERS[id].ar || id} — ${ENG_PERMS[v].ar}`, 'success');
+    renderEngineers();
+}
+// Apply UI restrictions for scoped engineers (hide management tabs/bars)
+function applyEngineerScopeUI() {
+    const scoped = isScopedEngineer();
+    document.body.toggleAttribute('data-eng-scoped', scoped);
+    document.body.toggleAttribute('data-eng-own', !!CURRENT_USER && CURRENT_USER.role === 'engineer' && engPerm(CURRENT_USER.id) === 'own');
+    if (scoped) {
+        const active = document.querySelector('.tab.active');
+        if (active && getComputedStyle(active).display === 'none') switchTab(0);
+    }
+    const ef = document.getElementById('engineerFilter');
+    if (ef && !canSeeAllPivots()) ef.value = '';
+}
+// Guard every per-pivot edit: block when the open pivot is outside the engineer's area
+(function guardPivotEdits() {
+    const fns = ['setPrepDate','setPlantingDate','saveTechSpecs','toggleExperiment','saveExperimentData','addMeasurement','deleteMeasurement','setOpDate','toggleOpStatus','addNote','deleteNote','uploadImages','uploadVideo','deleteImage','deleteVideo'];
+    fns.forEach(n => {
+        const orig = window[n];
+        if (typeof orig !== 'function') return;
+        window[n] = function(...args) {
+            if (currentPivot && !canEditPivot(currentPivot)) {
+                toast(LANG==='ar' ? '🔒 هذا المحور خارج منطقتك — عرض فقط' : '🔒 Outside your area — view only', 'warn');
+                if (n === 'setOpDate' || n === 'saveTechSpecs') try { openModal(currentPivot); } catch(e){}
+                return;
+            }
+            return orig.apply(this, args);
+        };
+    });
+    const origSetEng = window.setEngineer;
+    if (typeof origSetEng === 'function') window.setEngineer = function(pivot, key) {
+        if (isScopedEngineer()) { toast(LANG==='ar' ? '🔒 تعيين المهندسين للمسؤول فقط' : '🔒 Admin only', 'warn'); return; }
+        return origSetEng(pivot, key);
+    };
+    const origBulk = window.bulkAssign;
+    if (typeof origBulk === 'function') window.bulkAssign = function() {
+        if (isScopedEngineer()) { toast(LANG==='ar' ? '🔒 تعيين المهندسين للمسؤول فقط' : '🔒 Admin only', 'warn'); return; }
+        return origBulk();
+    };
+    const origQa = window.qaApply;
+    if (typeof origQa === 'function') window.qaApply = function() {
+        if (isScopedEngineer()) { toast(LANG==='ar' ? '🔒 تعيين المهندسين للمسؤول فقط' : '🔒 Admin only', 'warn'); return; }
+        return origQa();
+    };
+    const origOpen = window.openModal;
+    if (typeof origOpen === 'function') window.openModal = function(pivot) {
+        if (!canSeeAllPivots() && !canEditPivot(pivot)) { toast(LANG==='ar' ? '🔒 هذا المحور خارج منطقتك' : '🔒 Outside your area', 'warn'); return; }
+        const r = origOpen(pivot);
+        const mb = document.getElementById('modalBody');
+        if (mb) {
+            const ro = !canEditPivot(pivot);
+            mb.classList.toggle('pivot-readonly', ro);
+            if (ro && !mb.querySelector('.ro-banner')) mb.insertAdjacentHTML('afterbegin', `<div class="ro-banner">🔒 ${LANG==='ar'?'هذا المحور خارج منطقتك — عرض فقط':'Outside your area — view only'}</div>`);
+        }
+        return r;
+    };
+})();
 
 function renderAdminPanel() {
     if (!isAdmin()) return '';
@@ -5700,6 +5813,11 @@ function renderAdminPanel() {
             <input type="text" id="pin-${id}" value="${pin}" maxlength="6" placeholder="4 أرقام" inputmode="numeric">
             <button onclick="setEnginePin('${id}')">حفظ الكود</button>
             ${pin ? `<span style="color:#27AE60;font-size:0.75rem;">✅ مفعّل</span>` : `<span style="color:#C0392B;font-size:0.75rem;">⚠️ غير مفعّل</span>`}
+            <select id="perm-${id}" style="padding:6px 9px;border:1px solid #2874A6;border-radius:8px;font-family:inherit;font-size:0.82rem;background:white;">
+                ${Object.keys(ENG_PERMS).map(k => `<option value="${k}" ${engPerm(id)===k?'selected':''}>${ENG_PERMS[k].ar}</option>`).join('')}
+            </select>
+            <button onclick="setEngineerPerm('${id}')" style="background:#2874A6;">🔐 حفظ الصلاحية</button>
+            ${SUPERVISORS[id] && new Date().toISOString().slice(0,10) <= SUPERVISORS[id].until ? `<span style="color:#2874A6;font-size:0.72rem;">⭐ مشرف حتى ${SUPERVISORS[id].until} (صلاحية كاملة)</span>` : ''}
         </div>`;
     });
 
@@ -5761,7 +5879,7 @@ function exportUserConfig() {
     snippet += 'const DEFAULT_ENGINEERS = {\n';
     engIds.forEach(id => {
         const e = ENGINEERS[id];
-        snippet += `    ${id}: { ar: '${(e.ar||'').replace(/'/g,"\\'")}', en: '${(e.en||'').replace(/'/g,"\\'")}', zone: '${(e.zone||'').replace(/'/g,"\\'")}', color: '${e.color||'#27AE60'}', role: 'engineer', parent: null },\n`;
+        snippet += `    ${id}: { ar: '${(e.ar||'').replace(/'/g,"\\'")}', en: '${(e.en||'').replace(/'/g,"\\'")}', zone: '${(e.zone||'').replace(/'/g,"\\'")}', color: '${e.color||'#27AE60'}', role: 'engineer', parent: null${e.perm && e.perm!=='own' ? `, perm: '${e.perm}'` : ''} },\n`;
     });
     frmIds.forEach(id => {
         const f = ENGINEERS[id];
@@ -5833,7 +5951,7 @@ function renderAuditLog() {
             <thead><tr><th>التاريخ والوقت</th><th>المستخدم</th><th>المحور</th><th>الإجراء</th><th>التفاصيل</th></tr></thead>
             <tbody>
             ${latest.map(e => `<tr>
-                <td style="white-space:nowrap;font-family:monospace;font-size:0.72rem;">${new Date(e.at).toLocaleString('ar-SA')}</td>
+                <td style="white-space:nowrap;font-family:monospace;font-size:0.72rem;">${new Date(e.at).toLocaleString('en-GB')}</td>
                 <td style="font-weight:700;">${escapeHtml(e.byName || e.by || '—')}</td>
                 <td>${escapeHtml(e.pivot || '—')}</td>
                 <td><span class="action-tag ${e.action || 'edit'}">${actionLabels[e.action] || e.action}</span></td>
