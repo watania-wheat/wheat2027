@@ -902,6 +902,8 @@ body[dir="ltr"] .toast{border-right:none;border-left:4px solid var(--wtn-green)}
         <button class="btn" style="background:#8E44AD;" onclick="switchTab(3)" data-ar="التحليل" data-en="Analysis">التحليل</button>
         <button class="btn" onclick="document.getElementById('importJsonInput').click()" data-ar="استيراد" data-en="Import">استيراد</button>
         <input type="file" id="importJsonInput" accept="application/json,.json" onchange="importData(event)" style="position:absolute;left:-9999px;">
+        <button class="btn edit-only" style="background:#1E7E34;" onclick="document.getElementById('importExcelInput').click()" data-ar="استيراد Excel" data-en="Import Excel">استيراد Excel</button>
+        <input type="file" id="importExcelInput" accept=".xlsx,.xls,.csv" onchange="importExcelFile(event)" style="position:absolute;left:-9999px;">
         <button class="btn" style="background:#25D366;" onclick="document.getElementById('importWaInput').click()" data-ar="واتساب" data-en="WhatsApp">واتساب</button>
         <input type="file" id="importWaInput" accept=".txt,text/plain" multiple onchange="importWhatsApp(event)" style="position:absolute;left:-9999px;">
     </div>
@@ -3406,6 +3408,171 @@ function importData(e) {
     e.target.value = '';
 }
 
+
+// ═══ IMPORT EXCEL (the sheet exported by the Excel button, edited and brought back) ═══
+// Updates ONLY cells that have a value; empty cells leave existing data untouched.
+// Columns read: Pivot, Engineer, Prep start date, Planting date, Machine RPM, Well flow, Measure date.
+const XLSX_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+function loadXlsxLib() {
+    if (window.XLSX) return Promise.resolve(window.XLSX);
+    return new Promise((res, rej) => {
+        const sc = document.createElement('script');
+        sc.src = XLSX_CDN; sc.onload = () => res(window.XLSX); sc.onerror = () => rej(new Error('xlsx'));
+        document.head.appendChild(sc);
+    });
+}
+function _csvRows(text) {
+    text = text.replace(/^﻿/, '');
+    const first = text.split(/\r?\n/)[0] || '';
+    const cnt = ch => first.split(ch).length;
+    const delim = [',', ';', '\t'].sort((a,b) => cnt(b) - cnt(a))[0];
+    const rows = []; let row = [], cur = '', inQ = false;
+    for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (inQ) {
+            if (ch === '"') { if (text[i+1] === '"') { cur += '"'; i++; } else inQ = false; }
+            else cur += ch;
+        } else if (ch === '"') inQ = true;
+        else if (ch === delim) { row.push(cur); cur = ''; }
+        else if (ch === '\n' || ch === '\r') {
+            if (ch === '\r' && text[i+1] === '\n') i++;
+            row.push(cur); cur = ''; rows.push(row); row = [];
+        } else cur += ch;
+    }
+    if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+    return rows.filter(r => r.some(c => String(c).trim() !== ''));
+}
+function _xlDate(v) {
+    if (v === null || v === undefined || v === '') return '';
+    const pad = n => String(n).padStart(2, '0');
+    if (v instanceof Date && !isNaN(v)) return `${v.getFullYear()}-${pad(v.getMonth()+1)}-${pad(v.getDate())}`;
+    if (typeof v === 'number' && v > 20000 && v < 80000) {   // Excel serial date
+        const d = new Date(Math.round((v - 25569) * 86400000));
+        return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`;
+    }
+    const s = String(v).trim().replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+    let m = s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);
+    if (m) return `${m[1]}-${pad(m[2])}-${pad(m[3])}`;
+    m = s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);   // dd/mm/yyyy (as the page displays)
+    if (m) return `${m[3]}-${pad(m[2])}-${pad(m[1])}`;
+    return null;  // unreadable
+}
+function _xlNum(v) {
+    if (v === null || v === undefined || String(v).trim() === '') return '';
+    const n = parseFloat(String(v).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/,/g, ''));
+    return isNaN(n) ? null : n;
+}
+async function importExcelFile(e) {
+    const f = e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    if (isViewer()) { toast('عرض فقط', 'warn'); return; }
+    let rows;
+    try {
+        if (/\.csv$/i.test(f.name)) {
+            rows = _csvRows(await f.text());
+        } else {
+            let X;
+            try { X = await loadXlsxLib(); }
+            catch(err) { alert('تعذر تحميل قارئ Excel — تأكد من الاتصال بالإنترنت، أو احفظ الملف بصيغة CSV وجرّب.'); return; }
+            const wb = X.read(await f.arrayBuffer(), { type: 'array', cellDates: false });
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            rows = X.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' });
+        }
+    } catch(err) { alert('تعذرت قراءة الملف: ' + err.message); return; }
+    if (!rows || rows.length < 2) { alert('الملف فارغ'); return; }
+
+    // Locate header row and columns (Arabic or English headers)
+    const norm = v => String(v ?? '').replace(/^﻿/, '').trim().toLowerCase();
+    const COLS = {
+        pivot:   ['المحور', 'pivot'],
+        eng:     ['المهندس', 'engineer'],
+        prep:    ['تاريخ بداية التجهيز', 'prep start date'],
+        plant:   ['تاريخ الزراعة', 'planting date'],
+        rpm:     ['سرعة الماكينة (rpm)', 'machine rpm'],
+        flow:    ['تصرف البئر (م³/س)', 'well flow (m³/h)'],
+        measure: ['تاريخ القياس', 'measure date']
+    };
+    let hIdx = rows.findIndex(r => r.some(c => COLS.pivot.includes(norm(c))));
+    if (hIdx < 0) { alert('ما لقيت عمود "المحور" — استخدم الملف اللي ينزل من زر Excel في الصفحة.'); return; }
+    const head = rows[hIdx].map(norm);
+    const col = {};
+    Object.keys(COLS).forEach(k => { const i = head.findIndex(h => COLS[k].includes(h)); if (i >= 0) col[k] = i; });
+
+    const engByName = {};
+    Object.keys(ENGINEERS).forEach(id => {
+        const e2 = ENGINEERS[id];
+        [id, e2.ar, e2.en].forEach(n => { if (n) engByName[norm(n)] = id; });
+    });
+    const canAssign = !isScopedEngineer();
+    const changes = [], skipped = [], unknownPivots = [], badEng = new Set(), badDates = [];
+    for (let i = hIdx + 1; i < rows.length; i++) {
+        const r = rows[i];
+        const pivot = String(r[col.pivot] ?? '').trim();
+        if (!pivot) continue;
+        const rec = DATA.find(d => d.pivot === pivot) || DATA.find(d => norm(d.pivot) === norm(pivot));
+        if (!rec) { unknownPivots.push(pivot); continue; }
+        const p = rec.pivot;
+        const t = TRACKING[p] || {};
+        const ch = { pivot: p, fields: {} };
+        const val = k => col[k] !== undefined ? r[col[k]] : '';
+        // Engineer
+        const en = norm(val('eng'));
+        if (en && canAssign) {
+            const id = engByName[en];
+            if (!id) badEng.add(String(val('eng')).trim());
+            else if (ASSIGNMENTS[p] !== id) ch.assign = id;
+        }
+        // Dates
+        [['prep','prepDate'],['plant','plantingDate'],['measure','measureDate']].forEach(([k, field]) => {
+            const d = _xlDate(val(k));
+            if (d === null) badDates.push(`${p}: ${val(k)}`);
+            else if (d && d !== (t[field] || '')) ch.fields[field] = d;
+        });
+        // Numbers
+        [['rpm','rpm'],['flow','wellFlow']].forEach(([k, field]) => {
+            const n = _xlNum(val(k));
+            if (n !== '' && n !== null && String(n) !== String(t[field] ?? '')) ch.fields[field] = n;
+        });
+        const nF = Object.keys(ch.fields).length;
+        if (!nF && !ch.assign) continue;
+        if (nF && !canEditPivot(p)) { skipped.push(p); delete ch.fields; if (!ch.assign) continue; ch.fields = {}; }
+        changes.push(ch);
+    }
+
+    const fieldAr = { prepDate:'تاريخ التجهيز', plantingDate:'تاريخ الزراعة', measureDate:'تاريخ القياس', rpm:'RPM', wellFlow:'التصرف' };
+    let msg = `📥 استيراد Excel — ${f.name}\n\n`;
+    msg += `محاور ستتحدث: ${changes.length}\n`;
+    const sample = changes.slice(0, 8).map(c => {
+        const parts = Object.keys(c.fields).map(k => `${fieldAr[k]}: ${k.endsWith('Date') ? fmtDate(c.fields[k]) : c.fields[k]}`);
+        if (c.assign) parts.unshift(`المهندس: ${ENGINEERS[c.assign]?.ar || c.assign}`);
+        return `• ${c.pivot} ← ${parts.join(' · ')}`;
+    });
+    if (sample.length) msg += sample.join('\n') + (changes.length > 8 ? `\n… و${changes.length - 8} غيرها` : '') + '\n';
+    if (unknownPivots.length) msg += `\n⚠️ محاور غير معروفة (تُتجاهل): ${unknownPivots.slice(0,10).join('، ')}${unknownPivots.length>10?'…':''}`;
+    if (badEng.size) msg += `\n⚠️ أسماء مهندسين غير معروفة (تُتجاهل): ${[...badEng].slice(0,6).join('، ')}`;
+    if (badDates.length) msg += `\n⚠️ تواريخ غير مفهومة (تُتجاهل): ${badDates.slice(0,6).join('، ')}`;
+    if (skipped.length) msg += `\n🔒 خارج منطقتك (تُتجاهل): ${skipped.slice(0,10).join('، ')}`;
+    if (!changes.length) { alert(msg + '\n\nما فيه تغييرات جديدة — كل القيم مطابقة للموجود.'); return; }
+    msg += `\n\nالخانات الفاضية في الملف ما تمسح شي. تطبيق التحديث؟`;
+    if (!confirm(msg)) return;
+
+    const s0 = sign();
+    changes.forEach(c => {
+        if (c.assign) ASSIGNMENTS[c.pivot] = c.assign;
+        if (Object.keys(c.fields).length) {
+            const t = getPivotData(c.pivot);
+            Object.assign(t, c.fields);
+            if (c.fields.prepDate) { t.prepSetBy = s0.by; t.prepSetByName = s0.byName; t.prepSetAt = s0.at; }
+            t.updated = new Date().toISOString();
+        }
+    });
+    saveTracking(); saveAssignments();
+    auditLog('edit', '', `استيراد Excel (${f.name}): ${changes.length} محور`);
+    renderAll();
+    toast(`✅ تم تحديث ${changes.length} محور من Excel`, 'success', 4000);
+    if (confirm('تنزيل نسخة JSON من البيانات بعد التحديث؟')) exportData();
+}
+
 function mergeEngineerFiles(e) {
     const files = Array.from(e.target.files);
     if (!files.length) return;
@@ -3546,6 +3713,7 @@ function exportExcel() {
         LANG==='ar'?'إنتاجية المرجع (ط/هـ)':'Reference yield (t/ha)',
         LANG==='ar'?'فرق الإنتاجية':'Yield diff',
         LANG==='ar'?'النتيجة النهائية':'Final result',
+        LANG==='ar'?'تاريخ بداية التجهيز':'Prep start date',
     ];
     
     const rows = DATA.map(r => {
@@ -3579,7 +3747,8 @@ function exportExcel() {
             exp.finalYield || '',
             exp.referenceYield || '',
             yieldDiff,
-            exp.finalResult || ''
+            exp.finalResult || '',
+            t.prepDate || ''
         ].map(v => {
             // Escape CSV values with commas or quotes
             const s = String(v);
