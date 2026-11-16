@@ -3394,6 +3394,7 @@ function importData(e) {
     r.onload = ev => {
         try {
             const d = JSON.parse(ev.target.result);
+            if (d && d.type === 'pivot-update') { applyPivotUpdate(d, f.name); return; }
             if (confirm(L('importConfirm'))) {
                 if (d.tracking) TRACKING = d.tracking;
                 if (d.assignments) ASSIGNMENTS = d.assignments;
@@ -3571,6 +3572,51 @@ async function importExcelFile(e) {
     renderAll();
     toast(`✅ تم تحديث ${changes.length} محور من Excel`, 'success', 4000);
     if (confirm('تنزيل نسخة JSON من البيانات بعد التحديث؟')) exportData();
+}
+
+
+// ═══ MERGE-ONLY UPDATE FILE (type: 'pivot-update') ═══
+// Adds report data without overwriting: an operation already marked done is kept as is;
+// only pivots inside the user's edit scope are touched.
+function applyPivotUpdate(d, fname) {
+    const opName_ = id => { const o = OPS.find(x => x.id === id); return o ? o.name_ar : id; };
+    const plan = [], skipped = [], unknown = [];
+    let opCount = 0;
+    Object.entries(d.tracking || {}).forEach(([pivot, pd]) => {
+        if (!DATA.find(r => r.pivot === pivot)) { unknown.push(pivot); return; }
+        if (!canEditPivot(pivot)) { skipped.push(pivot); return; }
+        const t = TRACKING[pivot] || { operations: {} };
+        const ops = Object.entries(pd.operations || {}).filter(([id, o]) => OPS.find(x => x.id === id) && (t.operations?.[id]?.status !== 'done'));
+        const fields = {};
+        ['rpm', 'wellFlow', 'plantingDate', 'prepDate', 'measureDate'].forEach(k => {
+            if (pd[k] !== undefined && pd[k] !== null && pd[k] !== '' && String(pd[k]) !== String(t[k] ?? '')) fields[k] = pd[k];
+        });
+        if (!ops.length && !Object.keys(fields).length) return;
+        opCount += ops.length;
+        plan.push({ pivot, ops, fields });
+    });
+    let msg = `📥 ${d.source || fname}\n\nمحاور ستتحدث: ${plan.length} · عمليات تُسجَّل منجزة: ${opCount}\n`;
+    msg += plan.slice(0, 10).map(x => `• ${x.pivot}: ${x.ops.map(([id]) => opName_(id)).join('، ')}${x.fields.rpm ? ' · RPM ' + x.fields.rpm : ''}${x.fields.wellFlow ? ' · تصرف ' + x.fields.wellFlow : ''}`).join('\n');
+    if (plan.length > 10) msg += `\n… و${plan.length - 10} غيرها`;
+    if (skipped.length) msg += `\n\n🔒 خارج منطقتك (تُتجاهل): ${skipped.length}`;
+    if (unknown.length) msg += `\n⚠️ محاور غير معروفة: ${unknown.join('، ')}`;
+    if (!plan.length) { alert(msg + '\n\nما فيه شي جديد — كل البيانات موجودة.'); return; }
+    msg += `\n\nالعمليات المسجلة سابقاً ما تتغير. تطبيق؟`;
+    if (!confirm(msg)) return;
+    const sg = sign();
+    plan.forEach(x => {
+        const t = getPivotData(x.pivot);
+        x.ops.forEach(([id, o]) => {
+            const cur = t.operations[id] || {};
+            t.operations[id] = { ...cur, status: 'done', actualDate: o.actualDate || cur.actualDate || '', markedBy: sg.by, markedByName: sg.byName, markedAt: sg.at, source: d.source || fname };
+        });
+        Object.assign(t, x.fields);
+        t.updated = new Date().toISOString();
+    });
+    saveTracking();
+    auditLog('edit', '', `تحديث من ملف (${fname}): ${plan.length} محور، ${opCount} عملية`);
+    renderAll();
+    toast(`✅ تم تحديث ${plan.length} محور`, 'success', 4000);
 }
 
 function mergeEngineerFiles(e) {
