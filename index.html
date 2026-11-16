@@ -2165,7 +2165,7 @@ function openModal(pivot) {
             <div class="info-item"><div class="ilabel">${LANG==='ar'?'المساحة':'Area'}</div><div class="ival">${rec.area} ${LANG==='ar'?'هـ':'ha'}</div></div>
             <div class="info-item"><div class="ilabel">${LANG==='ar'?'إنتاج 2026':'2026 yield'}</div><div class="ival">${rec.prod26 ? rec.prod26.toFixed(2)+(LANG==='ar'?' ط/هـ':' t/ha') : '—'}</div></div>
             <div class="info-item"><div class="ilabel">${LANG==='ar'?'سرعة الماكينة':'Machine RPM'}</div><div class="ival">${t.rpm || '—'} ${t.rpm?'<span style="font-size:0.72rem;color:var(--wtn-text-soft);">RPM</span>':''}</div></div>
-            <div class="info-item"><div class="ilabel">${LANG==='ar'?'تصرف البئر':'Well flow'}</div><div class="ival">${t.wellFlow ? t.wellFlow + (LANG==='ar'?' <span style="font-size:0.72rem;color:var(--wtn-text-soft);">م³/س</span>':' <span style="font-size:0.72rem;color:var(--wtn-text-soft);">m³/h</span>') : '—'}</div></div>
+            <div class="info-item"><div class="ilabel">${LANG==='ar'?'تصرف البئر':'Well flow'}</div><div class="ival">${t.wellFlow && t.wellFlowTotal && wellShares(pivot).length > 1 ? `<span style="font-size:0.7rem;color:var(--wtn-text-soft);">${LANG==='ar'?'حصة':'share'} </span>` : ''}${t.wellFlow ? t.wellFlow + (LANG==='ar'?' <span style="font-size:0.72rem;color:var(--wtn-text-soft);">م³/س</span>':' <span style="font-size:0.72rem;color:var(--wtn-text-soft);">m³/h</span>') : '—'}</div></div>
             <div class="info-item"><div class="ilabel">${LANG==='ar'?'التقييم':'Risk level'}</div><div class="ival"><span class="risk-tag ${rec.risk}">${{critical:'حرج',high:'عالي',medium:'متوسط',low:'جيد'}[rec.risk]}</span></div></div>
             <div class="info-item"><div class="ilabel">${LANG==='ar'?'الإنجاز':'Progress'}</div><div class="ival">${getProgress(pivot)}%</div></div>
         </div>
@@ -2203,10 +2203,21 @@ function openModal(pivot) {
                 <span style="font-size:0.75rem;color:#777;">RPM</span>
             </div>
             <div class="tech-item">
-                <label>${LANG==='ar'?'تصرف البئر':'Well flow'}</label>
-                <input type="number" id="flowInput" value="${t.wellFlow || ''}" placeholder="${LANG==='ar'?'150':'150'}" min="0" step="0.1">
+                <label>${wellShares(pivot).length > 1 ? (LANG==='ar'?'تصرف البئر الكلي (العداد)':'Total well flow (meter)') : (LANG==='ar'?'تصرف البئر':'Well flow')}</label>
+                <input type="number" id="flowInput" value="${(wellShares(pivot).length > 1 ? wellFlowTotalOf(t) : t.wellFlow) || ''}" placeholder="${LANG==='ar'?'150':'150'}" min="0" step="0.1">
                 <span style="font-size:0.75rem;color:#777;">${LANG==='ar'?'م³/س':'m³/h'}</span>
             </div>
+            ${(() => {
+                const sh = wellShares(pivot);
+                if (sh.length < 2) return '';
+                const tot = wellFlowTotalOf(t);
+                const others = sh.filter(x => x.pivot !== pivot).map(x => x.pivot).join('، ');
+                const rows = sh.map(x => `<span style="display:inline-block;margin-inline-end:12px;"><strong>${x.pivot}</strong> ${x.area} هـ (${Math.round(x.pct*100)}%)${tot ? ` ← <strong style="color:#2874A6;">${(Math.round(tot*x.pct*10)/10)}</strong> م³/س` : ''}</span>`).join('');
+                return `<div style="width:100%;background:#EAF4FB;border:1px dashed #2874A6;border-radius:8px;padding:8px 10px;font-size:0.8rem;line-height:1.8;color:#1B4332;">
+                    🔗 <strong>${LANG==='ar'?'بئر مشترك':'Shared well'} ${DATA.find(r=>r.pivot===pivot)?.well}</strong> ${LANG==='ar'?'مع':'with'} <strong>${others}</strong> — ${LANG==='ar'?'سرعة الماكينة وتاريخ القياس وعداد المياه وساعات المكينة تنحفظ للمحورين معاً، والتصرف يتوزع حسب المساحة:':'RPM, measure date, water meter and engine hours are saved to both; flow is split by area:'}<br>${rows}
+                    ${t.wellSyncFrom ? `<br><span style="color:#777;font-size:0.72rem;">${LANG==='ar'?'آخر تحديث من':'Last synced from'} ${t.wellSyncFrom} · ${t.wellSyncByName || ''} · ${fmtDateTime(t.wellSyncAt)}</span>` : ''}
+                </div>`;
+            })()}
             <div class="tech-item">
                 <label>${LANG==='ar'?'تاريخ القياس':'Measured on'}</label>
                 <input type="date" id="measureDateInput" value="${t.measureDate || ''}">
@@ -2266,7 +2277,7 @@ function openModal(pivot) {
             ${t.rpm || t.wellFlow || t.initWaterMeter || t.pivotSpeed || t.prepIrrHours ? `<div style="width:100%;margin-top:8px;font-size:0.8rem;color:#1B4332;background:#F0F8FF;padding:8px 10px;border-radius:8px;line-height:1.7;">
                 <strong style="color:var(--wtn-green-dark);letter-spacing:0.2px;">ملخص القراءات</strong><br>
                 ${t.rpm ? `<strong>RPM:</strong> ${t.rpm} · ` : ''}
-                ${t.wellFlow ? `<strong>التصرف:</strong> ${t.wellFlow} م³/س · ` : ''}
+                ${t.wellFlow ? `<strong>التصرف:</strong> ${t.wellFlow} م³/س${t.wellFlowTotal && wellShares(currentPivot).length > 1 ? ` (حصة المحور من ${t.wellFlowTotal} الكلي)` : ''} · ` : ''}
                 ${t.initWaterMeter ? `<strong>عداد المياه:</strong> ${Number(t.initWaterMeter).toLocaleString()} م³ · ` : ''}
                 ${t.initEngineHours ? `<strong>ساعات المكينة:</strong> ${Number(t.initEngineHours).toLocaleString()} س · ` : ''}
                 ${t.initPivotHours ? `<strong>ساعات المحور:</strong> ${Number(t.initPivotHours).toLocaleString()} س · ` : ''}
@@ -2301,6 +2312,64 @@ function openModal(pivot) {
 
 function closeModal() { document.getElementById('modal').classList.remove('active'); currentPivot = null; renderAll(); }
 function setEngineer(pivot, key) { ASSIGNMENTS[pivot] = key; saveAssignments(); renderEngineers(); }
+// ═══ SHARED WELL (one meter feeding 2 pivots) ═══
+// Well-level readings are identical on every pivot of the same well (same phase + well no.).
+// Flow: the meter total is kept fixed (wellFlowTotal) and each pivot gets wellFlow = total × its area share.
+const WELL_FIELDS = ['rpm', 'measureDate', 'initWaterMeter', 'initEngineHours'];
+function wellGroup(pivot) {
+    const rec = DATA.find(r => r.pivot === pivot);
+    if (!rec || rec.well === null || rec.well === undefined || String(rec.well).trim() === '' || String(rec.well).trim() === '—') return rec ? [rec] : [];
+    return DATA.filter(r => r.phase === rec.phase && String(r.well) === String(rec.well));
+}
+function wellShares(pivot) {
+    const g = wellGroup(pivot);
+    const sum = g.reduce((a, r) => a + (Number(r.area) || 0), 0) || 1;
+    return g.map(r => ({ pivot: r.pivot, area: Number(r.area) || 0, pct: (Number(r.area) || 0) / sum }));
+}
+function wellFlowTotalOf(t) { return (t && (t.wellFlowTotal ?? t.wellFlow)) || null; }
+// Write well-level values + distributed flow to every pivot on the same well. Returns pivots skipped (no permission).
+function applyWellToGroup(srcPivot, vals, opts = {}) {
+    const shares = wellShares(srcPivot);
+    if (shares.length < 2) return [];
+    const skipped = [];
+    const sg = sign();
+    const total = vals.wellFlowTotal === '' || vals.wellFlowTotal === undefined ? undefined : vals.wellFlowTotal;
+    shares.forEach(sh => {
+        if (!opts.force && !canEditPivot(sh.pivot)) { skipped.push(sh.pivot); return; }
+        const t = getPivotData(sh.pivot);
+        WELL_FIELDS.forEach(k => { if (vals[k] !== undefined) t[k] = vals[k]; });
+        if (total !== undefined) {
+            t.wellFlowTotal = total;
+            t.wellFlow = total === null ? null : Math.round(total * sh.pct * 10) / 10;
+        }
+        if (!opts.silent) {
+            if (sh.pivot !== srcPivot) { t.wellSyncFrom = srcPivot; t.wellSyncAt = sg.at; t.wellSyncByName = sg.byName; }
+            t.updated = new Date().toISOString();
+        }
+    });
+    return skipped;
+}
+// One-time normalisation of older data: if a shared well has one agreed meter value, treat it as the total and distribute.
+function normalizeSharedWells() {
+    const seen = new Set();
+    DATA.forEach(rec => {
+        const key = rec.phase + '|' + rec.well;
+        if (seen.has(key)) return; seen.add(key);
+        const g = wellGroup(rec.pivot);
+        if (g.length < 2) return;
+        const ts = g.map(r => TRACKING[r.pivot] || {});
+        if (ts.some(t => t.wellFlowTotal !== undefined && t.wellFlowTotal !== null)) return;  // already linked
+        const vals = {};
+        const flows = [...new Set(ts.map(t => t.wellFlow).filter(v => v !== undefined && v !== null && v !== ''))];
+        if (flows.length === 1) vals.wellFlowTotal = Number(flows[0]);
+        WELL_FIELDS.forEach(k => {
+            const vs = [...new Set(ts.map(t => t[k]).filter(v => v !== undefined && v !== null && v !== ''))];
+            if (vs.length === 1) vals[k] = vs[0];
+        });
+        if (Object.keys(vals).length) applyWellToGroup(rec.pivot, vals, { force: true, silent: true });
+    });
+}
+
 // ═══ PREPARATION START DATE (pre-planting ops are generated forward from it) ═══
 // Earliest prep op is day -27 → prep span = 27 days, so op.day maps to prepDate + (op.day + PREP_SPAN)
 const PREP_SPAN = -Math.min(...OPS.filter(o => o.day < 0).map(o => o.day));
@@ -2365,7 +2434,8 @@ function saveTechSpecs() {
     const t = getPivotData(currentPivot);
     const s = sign();
     t.rpm = rpm ? parseInt(rpm) : null;
-    t.wellFlow = flow ? parseFloat(flow) : null;
+    const sharedWell = wellShares(currentPivot).length > 1;
+    if (!sharedWell) t.wellFlow = flow ? parseFloat(flow) : null;
     t.measureDate = measureDate || null;
     t.initWaterMeter = initWater ? parseInt(initWater) : null;
     t.initEngineHours = initEngineHours ? parseFloat(initEngineHours) : null;
@@ -2378,9 +2448,19 @@ function saveTechSpecs() {
     t.recordedByName = s.byName;
     t.recordedAt = s.at;
     t.updated = new Date().toISOString();
+    let wellMsg = '';
+    if (sharedWell) {
+        const skippedW = applyWellToGroup(currentPivot, {
+            rpm: t.rpm, measureDate: t.measureDate, initWaterMeter: t.initWaterMeter, initEngineHours: t.initEngineHours,
+            wellFlowTotal: flow ? parseFloat(flow) : null
+        });
+        const partners = wellShares(currentPivot).map(x => x.pivot).filter(x => x !== currentPivot && !skippedW.includes(x));
+        if (partners.length) wellMsg = ` + ${partners.join('، ')}`;
+        if (skippedW.length) setTimeout(() => toast(`🔒 ${skippedW.join('، ')} خارج منطقتك — ما تحدّث`, 'warn', 4000), 400);
+    }
     saveTracking();
-    auditLog('edit', currentPivot, `بيانات فنية محفوظة`);
-    toast('تم حفظ البيانات', 'success');
+    auditLog('edit', currentPivot, `بيانات فنية محفوظة${wellMsg ? ' (بئر مشترك' + wellMsg + ')' : ''}`);
+    toast('تم حفظ البيانات' + wellMsg, 'success');
     openModal(currentPivot);
 }
 
@@ -3532,7 +3612,8 @@ async function importExcelFile(e) {
         // Numbers
         [['rpm','rpm'],['flow','wellFlow']].forEach(([k, field]) => {
             const n = _xlNum(val(k));
-            if (n !== '' && n !== null && String(n) !== String(t[field] ?? '')) ch.fields[field] = n;
+            const cur = (field === 'wellFlow' && wellShares(p).length > 1) ? wellFlowTotalOf(t) : t[field];
+            if (n !== '' && n !== null && String(n) !== String(cur ?? '')) ch.fields[field] = n;
         });
         const nF = Object.keys(ch.fields).length;
         if (!nF && !ch.assign) continue;
@@ -3562,7 +3643,13 @@ async function importExcelFile(e) {
         if (c.assign) ASSIGNMENTS[c.pivot] = c.assign;
         if (Object.keys(c.fields).length) {
             const t = getPivotData(c.pivot);
+            const wf = c.fields.wellFlow; delete c.fields.wellFlow;
             Object.assign(t, c.fields);
+            if (wellShares(c.pivot).length > 1) {
+                const v = {}; WELL_FIELDS.forEach(k => { if (c.fields[k] !== undefined) v[k] = c.fields[k]; });
+                if (wf !== undefined) v.wellFlowTotal = wf;
+                if (Object.keys(v).length) applyWellToGroup(c.pivot, v);
+            } else if (wf !== undefined) t.wellFlow = wf;
             if (c.fields.prepDate) { t.prepSetBy = s0.by; t.prepSetByName = s0.byName; t.prepSetAt = s0.at; }
             t.updated = new Date().toISOString();
         }
@@ -3588,8 +3675,10 @@ function applyPivotUpdate(d, fname) {
         const t = TRACKING[pivot] || { operations: {} };
         const ops = Object.entries(pd.operations || {}).filter(([id, o]) => OPS.find(x => x.id === id) && (t.operations?.[id]?.status !== 'done'));
         const fields = {};
+        const shared = wellShares(pivot).length > 1;
         ['rpm', 'wellFlow', 'plantingDate', 'prepDate', 'measureDate'].forEach(k => {
-            if (pd[k] !== undefined && pd[k] !== null && pd[k] !== '' && String(pd[k]) !== String(t[k] ?? '')) fields[k] = pd[k];
+            const cur = (k === 'wellFlow' && shared) ? wellFlowTotalOf(t) : t[k];
+            if (pd[k] !== undefined && pd[k] !== null && pd[k] !== '' && String(pd[k]) !== String(cur ?? '')) fields[k] = pd[k];
         });
         if (!ops.length && !Object.keys(fields).length) return;
         opCount += ops.length;
@@ -3610,8 +3699,14 @@ function applyPivotUpdate(d, fname) {
             const cur = t.operations[id] || {};
             t.operations[id] = { ...cur, status: 'done', actualDate: o.actualDate || cur.actualDate || '', markedBy: sg.by, markedByName: sg.byName, markedAt: sg.at, source: d.source || fname };
         });
+        const wf = x.fields.wellFlow; delete x.fields.wellFlow;
         Object.assign(t, x.fields);
         t.updated = new Date().toISOString();
+        if (wellShares(x.pivot).length > 1) {
+            const v = {}; WELL_FIELDS.forEach(k => { if (x.fields[k] !== undefined) v[k] = x.fields[k]; });
+            if (wf !== undefined) v.wellFlowTotal = Number(wf);
+            applyWellToGroup(x.pivot, v);
+        } else if (wf !== undefined) t.wellFlow = wf;
     });
     saveTracking();
     auditLog('edit', '', `تحديث من ملف (${fname}): ${plan.length} محور، ${opCount} عملية`);
@@ -3760,6 +3855,7 @@ function exportExcel() {
         LANG==='ar'?'فرق الإنتاجية':'Yield diff',
         LANG==='ar'?'النتيجة النهائية':'Final result',
         LANG==='ar'?'تاريخ بداية التجهيز':'Prep start date',
+        LANG==='ar'?'حصة المحور من التصرف (م³/س)':'Pivot flow share (m³/h)',
     ];
     
     const rows = DATA.map(r => {
@@ -3780,7 +3876,7 @@ function exportExcel() {
             r.pivot, r.phase, r.well, r.area, r.last_crop||'', r.power||'',
             engineerName, riskLabels[r.risk]||'',
             plantingDate, age, statusLabels[status], progress,
-            t.rpm || '', t.wellFlow || '', t.measureDate || '',
+            t.rpm || '', (wellShares(r.pivot).length > 1 ? wellFlowTotalOf(t) : t.wellFlow) || '', t.measureDate || '',
             r.prod26 ? r.prod26.toFixed(2) : '',
             r.warning_issue || '',
             (t.notes||[]).length, (t.images||[]).length,
@@ -3794,7 +3890,8 @@ function exportExcel() {
             exp.referenceYield || '',
             yieldDiff,
             exp.finalResult || '',
-            t.prepDate || ''
+            t.prepDate || '',
+            t.wellFlow || ''
         ].map(v => {
             // Escape CSV values with commas or quotes
             const s = String(v);
@@ -5885,6 +5982,7 @@ function showApp() {
 }
 
 function requireAuth() {
+    try { normalizeSharedWells(); } catch(e) { console.warn('wells', e); }
     populateLoginDropdown();
     if (CURRENT_USER) { showApp(); } else { document.getElementById('loginOverlay').style.display = 'flex'; }
 }
